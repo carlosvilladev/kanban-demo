@@ -1,0 +1,78 @@
+{
+  "$schema_version": "2",
+  "feature_id": "persistence-seed",
+  "tasks": [
+    {
+      "id": "T1",
+      "task_file": "docs/persistence-seed/feat/01-plan-01-storage-module.md",
+      "files_touched": [
+        "src/types/board.ts",
+        "src/storage/keys.ts",
+        "src/storage/boardStorage.ts",
+        "src/storage/__tests__/boardStorage.test.ts"
+      ],
+      "deps": [],
+      "est_minutes": 12,
+      "interfaces_produced": [
+        { "name": "STORAGE_KEYS", "signature": "{ board: 'kanban-demo:board' }", "kind": "export" },
+        { "name": "SCHEMA_VERSION", "signature": "number", "kind": "export" },
+        { "name": "readBoard", "signature": "(): BoardState | null", "kind": "function" },
+        { "name": "writeBoard", "signature": "(state: BoardState): void", "kind": "function" },
+        { "name": "clearBoard", "signature": "(): void", "kind": "function" },
+        { "name": "isValidBoardState", "signature": "(value: unknown): value is BoardState", "kind": "function" }
+      ],
+      "interfaces_consumed": []
+    },
+    {
+      "id": "T2",
+      "task_file": "docs/persistence-seed/feat/01-plan-02-seed-factory.md",
+      "files_touched": [
+        "src/seed/seedData.ts",
+        "src/seed/__tests__/seedData.test.ts"
+      ],
+      "deps": [],
+      "est_minutes": 8,
+      "interfaces_produced": [
+        { "name": "createSeedBoard", "signature": "(): BoardState", "kind": "function" }
+      ],
+      "interfaces_consumed": []
+    },
+    {
+      "id": "T3",
+      "task_file": "docs/persistence-seed/feat/01-plan-03-load-and-reset.md",
+      "files_touched": [
+        "src/storage/boardLifecycle.ts",
+        "src/storage/__tests__/boardLifecycle.test.ts"
+      ],
+      "deps": ["T1", "T2"],
+      "est_minutes": 8,
+      "interfaces_produced": [
+        { "name": "loadInitialBoard", "signature": "(): { state: BoardState; source: 'restored' | 'seeded' }", "kind": "function" },
+        { "name": "resetDemo", "signature": "(): BoardState", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T1", "name": "readBoard" },
+        { "from": "T1", "name": "writeBoard" },
+        { "from": "T1", "name": "clearBoard" },
+        { "from": "T2", "name": "createSeedBoard" }
+      ]
+    },
+    {
+      "id": "T4",
+      "task_file": "docs/persistence-seed/feat/01-plan-04-auto-persist.md",
+      "files_touched": [
+        "src/storage/useAutoPersist.ts",
+        "src/storage/__tests__/useAutoPersist.test.tsx"
+      ],
+      "deps": ["T3"],
+      "est_minutes": 6,
+      "interfaces_produced": [
+        { "name": "useAutoPersist", "signature": "(state: BoardState): void", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T1", "name": "writeBoard" },
+        { "from": "T3", "name": "resetDemo" }
+      ]
+    }
+  ]
+}

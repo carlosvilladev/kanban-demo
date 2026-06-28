@@ -1,1 +1,5 @@
 {"timestamp":"2026-06-28T22:12:41.001Z","type":"project_initialized","actor":"human","details":{"name":"kanban-demo","targets":["claude"]}}
+{"timestamp":"2026-06-28T23:14:35.614Z","type":"spec_created","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","compact":true,"compact_default":true,"task_count":4,"domains_referenced":["auth","persistence"]}}
+{"timestamp":"2026-06-28T23:14:44.964Z","type":"spec_created","actor":"agent","spec":"drag-and-drop","details":{"feature":"drag-and-drop","compact":true,"compact_default":true,"task_count":4,"domains_referenced":["drag-and-drop","board","persistence"]}}
+{"timestamp":"2026-06-28T23:15:19.387Z","type":"spec_created","actor":"agent","spec":"kanban-board","details":{"feature":"kanban-board","compact":true,"compact_default":true,"task_count":4,"domains_referenced":["board","drag-and-drop","persistence"]}}
+{"timestamp":"2026-06-28T23:17:04.552Z","type":"spec_created","actor":"agent","spec":"persistence-seed","details":{"feature":"persistence-seed","compact":false,"task_count":4,"domains_referenced":["persistence","board"]}}

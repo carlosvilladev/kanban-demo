@@ -1,0 +1,76 @@
+{
+  "$schema_version": "2",
+  "feature_id": "drag-and-drop",
+  "tasks": [
+    {
+      "id": "T1",
+      "task_file": "docs/drag-and-drop/feat/01-plan-01-dnd-core.md",
+      "files_touched": [
+        "src/dnd/types.ts",
+        "src/dnd/projectDrop.ts",
+        "src/dnd/applyMove.ts",
+        "src/dnd/projectDrop.test.ts",
+        "src/dnd/applyMove.test.ts"
+      ],
+      "deps": [],
+      "est_minutes": 8,
+      "interfaces_produced": [
+        { "name": "applyMove", "signature": "(board: Board, move: Move): Board", "kind": "function" },
+        { "name": "projectDrop", "signature": "(board: Board, activeId: string, overId: string | null): DropTarget | null", "kind": "function" },
+        { "name": "Move", "signature": "{ taskId: string; toColumnId: string; toIndex: number }", "kind": "type" },
+        { "name": "DropTarget", "signature": "{ toColumnId: string; toIndex: number }", "kind": "type" }
+      ],
+      "interfaces_consumed": []
+    },
+    {
+      "id": "T2",
+      "task_file": "docs/drag-and-drop/feat/01-plan-02-dnd-context-sensors.md",
+      "files_touched": [
+        "src/dnd/sensors.ts",
+        "src/dnd/BoardDndContext.tsx",
+        "src/dnd/BoardDndContext.test.tsx"
+      ],
+      "deps": ["T1"],
+      "est_minutes": 7,
+      "interfaces_produced": [
+        { "name": "BoardDndContext", "signature": "(props: { children: ReactNode }): JSX.Element", "kind": "function" },
+        { "name": "useBoardSensors", "signature": "(): SensorDescriptor[]", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T1", "name": "projectDrop" }
+      ]
+    },
+    {
+      "id": "T3",
+      "task_file": "docs/drag-and-drop/feat/01-plan-03-sortable-overlay-placeholder.md",
+      "files_touched": [
+        "src/dnd/useSortableTask.ts",
+        "src/dnd/DragOverlayCard.tsx"
+      ],
+      "deps": ["T1", "T2"],
+      "est_minutes": 7,
+      "interfaces_produced": [
+        { "name": "useSortableTask", "signature": "(id: string): SortableTaskHandles", "kind": "function" },
+        { "name": "DragOverlayCard", "signature": "(props: { taskId: string }): JSX.Element", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "BoardDndContext" }
+      ]
+    },
+    {
+      "id": "T4",
+      "task_file": "docs/drag-and-drop/feat/01-plan-04-integration-tests.md",
+      "files_touched": [
+        "src/dnd/dnd.integration.test.tsx",
+        "src/dnd/perf.test.ts"
+      ],
+      "deps": ["T2", "T3"],
+      "est_minutes": 8,
+      "interfaces_produced": [],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "BoardDndContext" },
+        { "from": "T3", "name": "useSortableTask" }
+      ]
+    }
+  ]
+}

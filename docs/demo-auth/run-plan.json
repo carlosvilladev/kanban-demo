@@ -1,0 +1,92 @@
+{
+  "$schema_version": "2",
+  "feature_id": "demo-auth",
+  "tasks": [
+    {
+      "id": "T1",
+      "task_file": "docs/demo-auth/feat/01-plan-01-session-store.md",
+      "files_touched": [
+        "src/auth/types.ts",
+        "src/auth/constants.ts",
+        "src/auth/session.ts",
+        "src/auth/session.test.ts"
+      ],
+      "deps": [],
+      "est_minutes": 10,
+      "interfaces_produced": [
+        { "name": "DemoUser", "signature": "{ id: string; name: string; avatar: string }", "kind": "type" },
+        { "name": "Session", "signature": "{ user: DemoUser; createdAt: number; version: number }", "kind": "type" },
+        { "name": "DEMO_USER", "signature": "DemoUser", "kind": "export" },
+        { "name": "DEMO_CREDENTIALS", "signature": "{ username: string; password: string }", "kind": "export" },
+        { "name": "SESSION_KEY", "signature": "string", "kind": "export" },
+        { "name": "readSession", "signature": "(): Session | null", "kind": "function" },
+        { "name": "writeSession", "signature": "(user: DemoUser): Session", "kind": "function" },
+        { "name": "clearSession", "signature": "(): void", "kind": "function" }
+      ],
+      "interfaces_consumed": []
+    },
+    {
+      "id": "T2",
+      "task_file": "docs/demo-auth/feat/01-plan-02-auth-context.md",
+      "files_touched": [
+        "src/auth/AuthContext.tsx",
+        "src/auth/useAuth.ts",
+        "src/auth/AuthContext.test.tsx"
+      ],
+      "deps": ["T1"],
+      "est_minutes": 15,
+      "interfaces_produced": [
+        { "name": "AuthProvider", "signature": "(props: { children: React.ReactNode }) => JSX.Element", "kind": "function" },
+        { "name": "useAuth", "signature": "() => { user: DemoUser | null; isAuthenticated: boolean; login: (creds?: { username: string; password: string }) => boolean; logout: () => void }", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T1", "name": "readSession" },
+        { "from": "T1", "name": "writeSession" },
+        { "from": "T1", "name": "clearSession" },
+        { "from": "T1", "name": "DEMO_USER" },
+        { "from": "T1", "name": "DEMO_CREDENTIALS" }
+      ]
+    },
+    {
+      "id": "T3",
+      "task_file": "docs/demo-auth/feat/01-plan-03-login-screen.md",
+      "files_touched": [
+        "src/auth/LoginScreen.tsx",
+        "src/auth/LoginScreen.css",
+        "src/auth/LoginScreen.test.tsx"
+      ],
+      "deps": ["T2"],
+      "est_minutes": 20,
+      "interfaces_produced": [
+        { "name": "LoginScreen", "signature": "() => JSX.Element", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "useAuth" },
+        { "from": "T1", "name": "DEMO_CREDENTIALS" }
+      ]
+    },
+    {
+      "id": "T4",
+      "task_file": "docs/demo-auth/feat/01-plan-04-route-gate-logout.md",
+      "files_touched": [
+        "src/auth/RequireAuth.tsx",
+        "src/auth/UserMenu.tsx",
+        "src/auth/UserMenu.css",
+        "src/auth/index.ts",
+        "src/App.tsx",
+        "src/auth/RequireAuth.test.tsx"
+      ],
+      "deps": ["T2", "T3"],
+      "est_minutes": 20,
+      "interfaces_produced": [
+        { "name": "RequireAuth", "signature": "(props: { children: React.ReactNode }) => JSX.Element", "kind": "function" },
+        { "name": "UserMenu", "signature": "() => JSX.Element", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "useAuth" },
+        { "from": "T2", "name": "AuthProvider" },
+        { "from": "T3", "name": "LoginScreen" }
+      ]
+    }
+  ]
+}

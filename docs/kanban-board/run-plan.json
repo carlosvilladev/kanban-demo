@@ -1,0 +1,92 @@
+{
+  "$schema_version": "2",
+  "feature_id": "kanban-board",
+  "tasks": [
+    {
+      "id": "T1",
+      "task_file": "docs/kanban-board/feat/01-plan-01-board-types-and-operations.md",
+      "files_touched": [
+        "src/types/board.ts",
+        "src/board/operations.ts",
+        "src/board/operations.test.ts"
+      ],
+      "deps": [],
+      "est_minutes": 20,
+      "interfaces_produced": [
+        { "name": "ColumnId", "signature": "'todo' | 'in-progress' | 'done'", "kind": "type" },
+        { "name": "Task", "signature": "{ id: string; title: string; description: string }", "kind": "type" },
+        { "name": "Column", "signature": "{ id: ColumnId; title: string; taskIds: string[] }", "kind": "type" },
+        { "name": "BoardState", "signature": "{ tasks: Record<string,Task>; columns: Record<ColumnId,Column>; columnOrder: ColumnId[] }", "kind": "type" },
+        { "name": "createEmptyBoard", "signature": "(): BoardState", "kind": "function" },
+        { "name": "createTask", "signature": "(state: BoardState, columnId: ColumnId, input: { title: string; description?: string }): BoardState", "kind": "function" },
+        { "name": "updateTask", "signature": "(state: BoardState, taskId: string, patch: { title?: string; description?: string }): BoardState", "kind": "function" },
+        { "name": "deleteTask", "signature": "(state: BoardState, taskId: string): BoardState", "kind": "function" },
+        { "name": "selectColumnTaskCount", "signature": "(state: BoardState, columnId: ColumnId): number", "kind": "function" },
+        { "name": "selectTasksForColumn", "signature": "(state: BoardState, columnId: ColumnId): Task[]", "kind": "function" },
+        { "name": "getTaskColumn", "signature": "(state: BoardState, taskId: string): ColumnId | undefined", "kind": "function" },
+        { "name": "assertBoardInvariants", "signature": "(state: BoardState): void", "kind": "function" }
+      ],
+      "interfaces_consumed": []
+    },
+    {
+      "id": "T2",
+      "task_file": "docs/kanban-board/feat/01-plan-02-board-store-context.md",
+      "files_touched": [
+        "src/board/BoardContext.tsx",
+        "src/board/BoardContext.test.tsx"
+      ],
+      "deps": ["T1"],
+      "est_minutes": 20,
+      "interfaces_produced": [
+        { "name": "BoardProvider", "signature": "({ initialState?: BoardState; children: ReactNode }) => JSX.Element", "kind": "function" },
+        { "name": "useBoard", "signature": "() => { state: BoardState; createTask: (columnId: ColumnId, input: { title: string; description?: string }) => void; editTask: (taskId: string, patch: { title?: string; description?: string }) => void; deleteTask: (taskId: string) => void; selectColumnTaskCount: (columnId: ColumnId) => number; selectTasksForColumn: (columnId: ColumnId) => Task[]; getTaskColumn: (taskId: string) => ColumnId | undefined }", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T1", "name": "createEmptyBoard" },
+        { "from": "T1", "name": "createTask" },
+        { "from": "T1", "name": "updateTask" },
+        { "from": "T1", "name": "deleteTask" },
+        { "from": "T1", "name": "BoardState" }
+      ]
+    },
+    {
+      "id": "T3",
+      "task_file": "docs/kanban-board/feat/01-plan-03-board-and-column-rendering.md",
+      "files_touched": [
+        "src/components/Board.tsx",
+        "src/components/Column.tsx",
+        "src/components/Board.test.tsx"
+      ],
+      "deps": ["T2"],
+      "est_minutes": 20,
+      "interfaces_produced": [
+        { "name": "Board", "signature": "() => JSX.Element", "kind": "function" },
+        { "name": "Column", "signature": "({ columnId: ColumnId }) => JSX.Element", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "useBoard" }
+      ]
+    },
+    {
+      "id": "T4",
+      "task_file": "docs/kanban-board/feat/01-plan-04-task-card-and-crud-ui.md",
+      "files_touched": [
+        "src/components/TaskCard.tsx",
+        "src/components/TaskForm.tsx",
+        "src/components/ConfirmDialog.tsx",
+        "src/components/TaskCard.test.tsx"
+      ],
+      "deps": ["T2", "T3"],
+      "est_minutes": 25,
+      "interfaces_produced": [
+        { "name": "TaskCard", "signature": "({ taskId: string }) => JSX.Element", "kind": "function" },
+        { "name": "TaskForm", "signature": "({ mode: 'create' | 'edit'; columnId?: ColumnId; taskId?: string; onClose: () => void }) => JSX.Element", "kind": "function" },
+        { "name": "ConfirmDialog", "signature": "({ message: string; onConfirm: () => void; onCancel: () => void }) => JSX.Element", "kind": "function" }
+      ],
+      "interfaces_consumed": [
+        { "from": "T2", "name": "useBoard" },
+        { "from": "T3", "name": "Column" }
+      ]
+    }
+  ]
+}

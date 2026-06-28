@@ -1,0 +1,22 @@
+feature: demo-auth
+status: draft
+profile: code
+action_type: ADD
+compact: true
+created_at: 2026-06-28
+domains:
+  - auth
+  - persistence
+dependencies:
+  blocking: []
+  blocks: []
+  related:
+    - persistence-seed
+notes: >-
+  Atomic single spec. The simulated login/session is independently reviewable
+  and verifiable: when authenticated the route gate renders the board area
+  (its children), so this spec does not depend on the board being built. Board
+  data persistence is owned by the `persistence-seed` feature (key
+  `kanban.board`); the session uses a dedicated, separate key (`kanban.session`)
+  so logout clears the session but never touches board data — satisfying the
+  invariant "Logging out clears the session but never deletes board data".

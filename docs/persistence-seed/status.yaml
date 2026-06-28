@@ -1,0 +1,36 @@
+feature: persistence-seed
+status: draft
+profile: code
+action_type: ADD
+compact: false
+created_at: '2026-06-28'
+domains:
+  - persistence
+  - board
+dependencies:
+  blocking: []
+  blocks: []
+external_dependencies:
+  - feature: kanban-board
+    relationship: consumes
+    reason: >-
+      Owns the canonical BoardState / Column / Task type model (src/types/board.ts)
+      consumed by the persistence and seed modules. Soft dependency — if persistence
+      is implemented first, it creates a minimal interim type to be reconciled.
+  - feature: demo-auth
+    relationship: related
+    reason: >-
+      Owns the login-session storage. FR-P3 restores board state AND session on
+      reload; this spec covers board state only. Both read localStorage on app init.
+notes: >-
+  Atomic persistence + demo-seed slice. Owns the single localStorage gateway
+  (src/storage/) and the deterministic seed factory (src/seed/). Out of scope:
+  board rendering & task CRUD (kanban-board), drag-and-drop (drag-and-drop), and
+  auth session mechanics (demo-auth). Trust level is supervised — left as draft
+  pending human/orchestrator review before approval.
+assumptions:
+  - localStorage key 'kanban-demo:board' with envelope { version, data } and SCHEMA_VERSION=1; a version bump invalidates old saves (no migrations — demo scope).
+  - Seed is persisted on first load so 'saved state exists' becomes true after first render; identical to lazy seeding until the first user change.
+  - Seed factory is deterministic (stable literal ids, no Date.now/Math.random) so Reset demo restores a well-defined original.
+  - Writes are synchronous write-through (no debounce) given the demo-sized board; storage errors are swallowed so the app never crashes (NFR-4).
+  - Eight seed tasks across To Do (3) / In Progress (2) / Done (3); titles/descriptions are demo-themed and self-referential.

@@ -1,0 +1,21 @@
+feature: drag-and-drop
+status: draft
+profile: code
+action_type: ADD
+compact: true
+created_at: 2026-06-28
+domains_referenced:
+  - drag-and-drop
+  - board
+  - persistence
+dependencies:
+  blocking:
+    - kanban-board   # provides Board/Column/Task model, normalized store, Board/Column/TaskCard components
+  soft:
+    - persistence-seed  # auto-saves on every state change emitted by a move
+    - demo-auth         # board (and therefore DnD) only renders for an authed session
+notes: >-
+  Single atomic spec. Drag-and-drop is the core showcase. The feature owns only
+  src/dnd/ — the board state model and store come from kanban-board; persistence
+  auto-saves the resulting state. Generated autonomously by the planning agent
+  from requirements.md (FR-D1..D8, NFR-2/3/5); see spec/spec.md "Assumptions".
