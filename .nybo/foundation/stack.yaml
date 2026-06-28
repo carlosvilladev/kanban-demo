@@ -1,0 +1,6 @@
+language: TypeScript
+framework: React
+runtime: Node.js
+packageManager: npm
+database: localStorage (browser)
+auth: Simulated demo login (no backend)

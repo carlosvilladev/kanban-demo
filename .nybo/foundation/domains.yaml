@@ -1,0 +1,77 @@
+domains:
+  - name: board
+    description: Board rendering, the three fixed columns, and task create/edit/delete.
+    conventions:
+      - Columns are fixed (To Do / In Progress / Done); no column CRUD in v1.
+      - >-
+        Components read board state from a single source of truth, never from
+        localStorage directly.
+    patterns:
+      - >-
+        Normalized state shape (tasks keyed by id; columns hold ordered
+        taskIds).
+      - >-
+        Optimistic local updates — UI changes immediately, then state is
+        persisted.
+    keyFiles:
+      - src/components/Board.tsx
+      - src/components/Column.tsx
+      - src/components/TaskCard.tsx
+    gotchas:
+      - >-
+        Each task must appear in exactly one column's taskIds — never zero,
+        never two.
+  - name: drag-and-drop
+    description: Reorder tasks within a column and move tasks between columns via dnd-kit.
+    conventions:
+      - >-
+        Use dnd-kit for all drag-and-drop; show a ghost preview and an insertion
+        placeholder.
+      - >-
+        Escape mid-drag and drops outside a valid target cancel the move
+        (restore origin).
+    patterns:
+      - >-
+        On drop, compute the new (columnId, index) and apply a single atomic
+        state update.
+    keyFiles:
+      - src/dnd/
+    gotchas:
+      - A successful or cancelled drag must never duplicate or lose a task.
+      - Support both mouse and touch sensors.
+  - name: persistence
+    description: localStorage seeding, auto-save, restore, and reset-demo.
+    conventions:
+      - >-
+        All localStorage access goes through one persistence module; components
+        never touch it directly.
+      - >-
+        Seed runs only when no saved state exists; user state takes precedence
+        over seed.
+    patterns:
+      - Auto-persist on every state change (no explicit save action).
+      - Reset-demo clears saved state and re-applies the seed.
+    keyFiles:
+      - src/storage/
+      - src/seed/
+    gotchas:
+      - >-
+        Corrupt or missing saved state must fall back to seed data, never crash
+        or render empty.
+  - name: auth
+    description: Simulated demo login and session handling.
+    conventions:
+      - >-
+        No real authentication; a one-click "Continue as Demo User" plus visible
+        demo credentials.
+      - >-
+        Session is a flag persisted to localStorage; logout clears it but never
+        deletes board data.
+    patterns:
+      - >-
+        Route gating — unauthenticated users see the login screen; authenticated
+        users see the board.
+    keyFiles:
+      - src/auth/
+    gotchas:
+      - Reload must keep the user logged in and land them back on the board.

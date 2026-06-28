@@ -1,0 +1,201 @@
+schema_version: 1
+skills:
+  - name: clean-code
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:20c903c18c4cd588052c973fbb1ec2896356f21e6f60b9e8ffec12de36c3db07
+    scope: local
+    extensions: []
+    pinned: false
+  - name: cqrs
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:6c2c6d933a08a5c63841788468acba05364e23d6af758d3d76990ef2cc9e8b9d
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-batch
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:5ac1315b63b50ed8412183d0c7f5cf272f2f75823f535638d5772fae7eac86ea
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-build-log
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:83620270942ef6c9bb3350478b4e3e81cdf181f1e8440cd5066817d61f7b7661
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-critique
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:17f5e0f1112c218445b155a0c72c1d08ccfff380da55302382a47c7e8df94a58
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-curate
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:3972ff99fcee0076b55abd67cbb4427c0c8d92e9250af64bdf2789d7ccf7ef0a
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-design
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:0e758beabc3cd463c57c7abfcc7830977e0f2451262a3b944b915d959fc432ab
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-fix-yaml
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:e9b26edfcb5b11e373eaa01d45df6f7dfe39f13c813dbfa4487d7ebdbf69a921
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-insights
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:b6ce6ef95ee636bf2ed37aa13ea98dfbe21fcf436fdfcd0f9bbcc15c23046cdb
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-plan
+    source: builtin
+    pinned_version: 1.1.0
+    pinned_sha: null
+    checksum: sha256:e38fe19b783301a6bb69f4aa537d16ae1c52bbe3e5b51874c51b8ab929e4c35b
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-pr
+    source: builtin
+    pinned_version: 1.2.0
+    pinned_sha: null
+    checksum: sha256:be7c36d8f6b49d061024fced3a284ff2abec0b512b382fa7484faf169b29dac8
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-reconcile
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:07568f963abec09391e9c3ed1faef0e32e4faace526a3fcb911f0037d0ae99ad
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-resolve-conflict
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:b8b5872f687052f13f08db9989e2a86225a21e976919309e15213c7dd88f1259
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-run
+    source: builtin
+    pinned_version: 1.1.0
+    pinned_sha: null
+    checksum: sha256:cf0a70025ccde5cf80795e92d5dbb26ba2ab60ed7ba47024c66942a8006045a2
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-session-summary
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:06145e37b4acd06ef5cf3d9164b1281ccafbd9c03c30ee5b3483fb15b4a108e8
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-ship
+    source: builtin
+    pinned_version: 2.0.0
+    pinned_sha: null
+    checksum: sha256:60f1c2e8d580397a6da6eb86a73dda88c435a14712eefd04b994e9789d40b104
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-simplify
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:ed4e76117537c3ad2337483334f941251bad4e99a749319d73f72b339c16388c
+    scope: local
+    extensions:
+      - claude
+    pinned: false
+  - name: nybo-sync-pr
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:3f0108e2c4e3e6024573d106440f033205e389c7c62a965e6cbedbeace2fb27b
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-tdd
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:f3fe0204d203ff9c49e3c5a7026d75ea7a52d5735b3d4abad24e4848cf7882af
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-verify
+    source: builtin
+    pinned_version: 1.2.0
+    pinned_sha: null
+    checksum: sha256:60d1119955141d7ecc5bb2c6bac998939c6caf302b6f36f2dc8bf66cc7c0936f
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-workflow-digest
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:e477e4eb8095f846305a8a01f395c6737948cc5c8b06cda1b1b0cd8e448c7197
+    scope: local
+    extensions: []
+    pinned: false
+  - name: nybo-worktree
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:a7d2ff8af137d0a76f7c7a18beeb51c7ed87afa1122cc078562510ef0aaebb7c
+    scope: local
+    extensions: []
+    pinned: false
+  - name: pattern-discover
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:b29a0218ef3407f3ad98328199d1825308800730525d404a2a6c440735fd119e
+    scope: local
+    extensions: []
+    pinned: false
+  - name: solid
+    source: builtin
+    pinned_version: 1.0.0
+    pinned_sha: null
+    checksum: sha256:d6cd1885b8c02ba1330ee60233ef3c941352b5b82f5f1a9e1302517c90557880
+    scope: local
+    extensions: []
+    pinned: false

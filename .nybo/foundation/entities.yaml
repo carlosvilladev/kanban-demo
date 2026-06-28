@@ -1,0 +1,30 @@
+entities:
+  - name: Board
+    description: The single Kanban board containing an ordered set of columns.
+    attributes:
+      - id
+      - title
+      - columnOrder
+  - name: Column
+    description: >-
+      A fixed workflow stage (To Do / In Progress / Done) holding an ordered
+      list of tasks.
+    attributes:
+      - id
+      - title
+      - taskIds
+      - order
+  - name: Task
+    description: A card representing a unit of work; belongs to exactly one column.
+    attributes:
+      - id
+      - title
+      - description
+      - columnId
+      - order
+  - name: DemoUser
+    description: The simulated authenticated user for the demo session.
+    attributes:
+      - id
+      - name
+      - avatar

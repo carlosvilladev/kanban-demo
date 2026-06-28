@@ -1,0 +1,199 @@
+---
+name: nybo-verify
+description: >-
+  Phase 3 verification: gather evidence (build, tests, coverage, diff),
+  present findings for human confirmation, and produce an evidence report.
+  Triggers on "verify", "check spec", or after implementation is complete.
+---
+
+> **Agent:** nybo-executor · **Model:** Sonnet 4.6 (`claude-sonnet-4-6`)
+> Switch now: `/model claude-sonnet-4-6`
+
+# nybo-verify
+
+Gather objective evidence about the current state of the implementation
+and present it for human evaluation. This skill does NOT make judgments —
+it collects facts and lets the human decide.
+
+---
+
+## Persona resolution
+
+Resolve persona: `--persona=<id>` → invoking agent's `persona:` → catalog default. Apply to the evidence report:
+
+- **`verbosity: minimal`** → table-only summary; no prose between sections.
+- **`verbosity: balanced`** → table summary plus a one-paragraph commentary.
+- **`verbosity: thorough`** → full prose walkthrough with cross-references.
+- **`progress_style: silent`** → suppress per-step narration while gathering evidence.
+
+---
+
+## 1a. Validate `run-plan.json` (when present)
+
+Before gathering evidence, validate the run-plan manifest if it exists at `docs/<feature>/run-plan.json`. Use `readRunPlan(rootDir, feature)` + `validateRunPlan(rootDir, manifest)` from `src/services/run-plan.ts`.
+
+Behavior by outcome:
+
+- **Manifest absent (TC-05 legacy parity)** — warn `no run-plan.json — skipping manifest validation (legacy spec from pre-manifest nybo)`, continue to Step 1.
+- **`error`-severity issues present** — halt: write the issue list to `docs/<feature>/evidence/run-plan-issues.txt`, record `nybo verify --record fail --feature <feature> --reason "run-plan.json invalid"`, surface the issues to the human, do NOT proceed to evidence gathering. Common error codes: `RUN_PLAN_CYCLE` (TC-02 — dependency cycle), `RUN_PLAN_TASK_FILE_MISSING` (TC-03 — task_file path absent), `RUN_PLAN_FILES_TOUCHED_MISSING`, `RUN_PLAN_DUPLICATE_ID`, `RUN_PLAN_UNKNOWN_DEP`, `RUN_PLAN_SHAPE`.
+- **`warning`-severity issues only** — surface to the human in the checklist (Step 2) but do NOT halt. Common code: `RUN_PLAN_FILES_TOUCHED_OVERLAP` (TC-06 — two unrelated tasks declare the same file in `files_touched`; may be intentional in sequential mode).
+- **No issues** — continue.
+
+---
+
+## 1. Gather evidence
+
+Run the following checks and capture output:
+
+### Build
+- Run the project's build command (from CORE.md `## Key Commands`).
+- Capture stdout/stderr to `docs/<feature>/evidence/build.log`.
+- Record: pass/fail, error count, warning count.
+
+### Tests
+- Run the project's test command.
+- Capture results to `docs/<feature>/evidence/test-results.txt`.
+- Record: total tests, passed, failed, skipped.
+
+### Coverage
+- If the test command produces coverage output, capture it.
+- Write summary to `docs/<feature>/evidence/coverage-summary.txt`.
+- Record: line coverage %, branch coverage %, uncovered files.
+
+### Diff analysis
+- Run `git diff` against the base branch (or main/master).
+- Write summary to `docs/<feature>/evidence/diff-summary.txt`.
+- Record: files changed, lines added, lines removed.
+- List new files and deleted files.
+
+### Design fidelity (Step 1.5)
+
+**If design contract absent → skip fidelity gate** (no `docs/<feature>/design/design.spec.json` → skip this subsection silently).
+
+When the contract exists, run the gates ONCE as evidence — this step never fixes anything; remediation belongs to `/nybo-design <feature>`:
+
+1. Confirm the dev-server URL with the user (the app must be running).
+2. Run the numeric gate, writing into evidence:
+   `node .nybo/workflows/nybo-design/references/measure.mjs --url <DEV_URL> --spec docs/<feature>/design/design.spec.json --out docs/<feature>/evidence/delta-report.json --log docs/<feature>/evidence/fidelity-log.jsonl`
+3. If it passes, run the visual gate:
+   `node .nybo/workflows/nybo-design/references/visual-diff.mjs --url <DEV_URL> --ref docs/<feature>/design/reference.png --spec docs/<feature>/design/design.spec.json --out docs/<feature>/evidence/visual-diff.png`
+4. Record: checks run, failures, visual diff ratio. A failed gate surfaces as an UNCHECKED checklist item with the remediation hint — the human decides; verify never auto-fixes.
+5. Log the outcome at this step (advisory event, intentionally NOT Hub-mapped):
+
+```bash
+# shape: {"gate":"design-fidelity","phase":"verify","checks":N,"failed":N,"visual_ratio":R}
+nybo events log gate_passed --spec <feature> --details '{"gate":"design-fidelity","phase":"verify","checks":138,"failed":0,"visual_ratio":0.0017}'
+# or on any gate failure:
+nybo events log gate_failed --spec <feature> --details '{"gate":"design-fidelity","phase":"verify","checks":138,"failed":5,"visual_ratio":0.032}'
+```
+
+---
+
+## 2. Present findings
+
+Compile a checklist from the evidence:
+
+```
+## Verification Checklist — <feature-name>
+
+- [ ] Build: <pass/fail> (<N> warnings)
+- [ ] Tests: <passed>/<total> passing (<N> failed)
+- [ ] Coverage: <N>% lines, <N>% branches
+- [ ] Diff: <N> files changed, +<N>/-<N> lines
+- [ ] Design fidelity: <checks-failed>/<checks> numeric · <ratio>% visual (omit row when no design contract; on FAIL leave unchecked with hint: remediate via /nybo-design <feature>)
+- [ ] Security: (reference security-scan.txt if nybo-verify ran)
+- [ ] Design principles: (check against design-principles.yaml)
+- [ ] Wiki alignment: if this spec changed user-visible capabilities, are they reflected in `wiki/` and pushed via `nybo wiki-sync push`? Otherwise `nybo doctor` will flag "Wiki Drift" post-merge.
+```
+
+Present this checklist to the human. Do not pre-check any boxes —
+the human marks each item as acceptable or flags concerns.
+
+---
+
+## 3. Human confirmation
+
+- Wait for the human to review each finding.
+- If the human flags a concern, note it and suggest next steps
+  (e.g. "fix failing tests", "increase coverage for X module").
+- If all items are accepted, update **`docs/<feature>/status.yaml`**:
+  `status: verified`, `verified_at: <ISO date>`.
+- **Record the outcome via the CLI (preferred):**
+  - **Pass** → run `nybo verify --record pass --feature <feature>` (emits `verify_passed` + `curate_needed` in one call).
+  - **Fail** → run `nybo verify --record fail --feature <feature> --reason "<short reason>"` (emits `verify_failed`; no `curate_needed`).
+  - The CLI auto-detects the feature from the current branch (`feat/<feature>` or `fix/<feature>`) — `--feature` is only needed when the branch doesn't follow the convention.
+- Do NOT hand-write `verify_passed` / `verify_failed` / `curate_needed` to events.jsonl any more — the CLI is the single source of truth for these three event types.
+
+---
+
+## 4. Generate report
+
+Write `docs/<feature>/evidence/verification-report.md` with:
+- Date and feature name
+- All evidence summaries
+- Human's decisions on each checklist item
+- Overall verdict: verified / needs-work
+
+---
+
+## Trust Behavior
+
+- **All levels:** Evidence gathering is autonomous — the skill runs
+  build, tests, and diff without asking.
+- **All levels:** The confirmation step is always interactive.
+  Verification requires human sign-off regardless of trust level.
+
+---
+
+## File Locations
+
+- **Evidence directory:** `docs/<feature>/evidence/`
+- **Status file:** `docs/<feature>/status.yaml` (per-spec, flat YAML)
+- **Event log:** `.nybo/events.jsonl`
+
+---
+
+## Capturing observations as you review
+
+If something surprising shows up while reviewing the checklist — a convention that held up under load, a violation that was unrelated to the feature, a reusable pattern worth extracting — capture it immediately via the feedback CLI so `/nybo-curate` can pick it up later:
+
+```
+nybo feedback capture <feature> --tag CONFIRMS "rate-limit convention held under load"
+nybo feedback capture <feature> --tag VIOLATES "auth helper was duplicated in /api/foo"
+nybo feedback capture <feature> --tag "NEW CONVENTION candidate" "always wrap fetch in retry-with-backoff"
+nybo feedback capture <feature> --tag "SKILL candidate" "JSONL parser worth extracting"
+```
+
+Valid tags: `CONFIRMS`, `VIOLATES`, `NEW CONVENTION candidate`, `SKILL candidate`, `DOMAIN candidate`, `NOTE` (default). The command appends to `docs/<feature>/feedback.md` and emits a `feedback_started` event so the next curate run sees the signal.
+
+---
+
+## Next Steps
+
+After verification passes, the lifecycle continues in a **fixed order**.
+Do **not** present these as a choice to the user — advance through them
+in sequence.
+
+1. **Curate runs first (automatic).** The `verify-passed-curate` hook
+   fires when this skill stops. It runs `nybo curate` so feedback flows
+   into project memory before the diff is published. At L1 (supervised)
+   the hook prompts; at L2+ it fires silently. Surface this to the user:
+   *"Curate hook will run automatically. Once it finishes, run
+   `/nybo-ship <feature>`."*
+2. **Then `/nybo-ship <feature>`** — Update CHANGELOG, commit, push, open
+   the PR, transition Jira, and monitor CI until green. This is the single
+   closing command — `/nybo-pr` is deprecated and forwards to `/nybo-ship`.
+
+If verification surfaced blockers, run `/nybo-plan fix <feature>`
+instead and restart the cycle from Run.
+
+---
+
+## What This Skill Does NOT Do
+
+- **Fix issues** — it reports them. Use nybo-run or nybo-plan
+  to address findings.
+- **Make pass/fail decisions** — the human decides. The skill presents
+  objective evidence only.
+- **Run security scans** — that is nybo-verify's responsibility.
+  This skill references security scan results if available.

@@ -1,0 +1,124 @@
+---
+name: cqrs
+description: Cost-effective CQRS adherence review. Scans the current diff (or explicit scope) for command/query separation violations, mixed read/write models, leaking handlers, and bus misuse. Outputs one-line findings.
+argument-hint: "<scope: 'diff' (default) | <path> | <glob>>"
+---
+
+# /cqrs
+
+Audit code against CQRS discipline. Optimised for repeat runs — bounded scope, terse output. Same cost rules as `/solid`.
+
+## What CQRS means here (one paragraph, no re-derivation)
+
+**Command** = intent to change state. Returns `void` / ack / id. Side effects yes. Reads of write-model state allowed only to enforce invariants.
+**Query** = request for data. Pure. No state change. Reads from a read model (or the write model if no separation yet).
+**Handler** = one class/function per Command or Query. No cross-wiring (a CommandHandler must not call another CommandHandler directly — it dispatches via the bus or emits an event).
+**Bus** = single entry point for dispatching commands/queries. App code does not new up handlers.
+**Read model** ≠ **Write model** — schema, projection, and storage can diverge. Eventual consistency is acceptable; document it.
+
+If the project uses a lighter "C/Q separation only" flavour (no buses, no projections), score against the **principle**: commands mutate, queries don't; types/names make the intent obvious.
+
+## Scope
+
+Same resolution rules as `/solid` (arg → diff → staged → unstaged → ask). Same filters. Same 30-file cap.
+
+Additional keep: files matching `**/commands/**`, `**/queries/**`, `**/handlers/**`, `**/*Command.{ts,java,cs,py,rb}`, `**/*Query.*`, `**/*Handler.*`, `**/*Bus.*`, `**/*Projection.*`, `**/*ReadModel.*`, `**/*WriteModel.*` — include even if outside the diff, when they're imported by changed files.
+
+## Checklist (compact)
+
+Apply in order. Each rule has a grep hint to keep the scan cheap.
+
+### Separation
+
+- **C/Q mixed signature.** Command returns domain data (not void/id/ack). Query returns `Promise<void>` or mutates. Grep: `class .*Command` / `class .*Query` / functions in `commands/` and `queries/`. Check return type + body.
+- **Mutation in a query.** Query handler writes to DB / calls `.save()` / publishes event. Grep in `queries/**` and `*Query*.ts`: `\.save\(|\.update\(|\.delete\(|\.create\(|prisma\..*\.(create|update|delete|upsert)|emit\(|publish\(`.
+- **Read in a command without invariant justification.** Command handler runs a query just to return data to the caller. Allowed: reads to enforce invariants (uniqueness, balance, etc.). Disallowed: read-then-return.
+- **Mixed model.** Same class/struct used as both write target and read DTO. Red flag: domain entity returned directly from a query handler.
+
+### Handlers
+
+- **One handler per message.** Handler dispatches more than one Command/Query type → split.
+- **Handler-to-handler call.** `someCommandHandler.handle(...)` inside another handler → must go through the bus or emit a domain event.
+- **Fat handler.** Handler > 100 LOC or > 5 collaborators → extract domain logic into the aggregate / domain service.
+- **Handler does HTTP / framework work.** Handler imports `Request`/`Response`/`NextRequest`/`Controller` decorators → move adapter code to the controller/route, keep handler framework-agnostic.
+
+### Bus / dispatch
+
+- **Direct `new Handler()`.** Application code instantiates handlers instead of using the bus / DI container.
+- **Bus leaks.** Anything that's not a handler call goes through the bus (e.g. domain logic dispatched via the command bus).
+- **Sync query through a command path.** Query dispatched via the command bus, or vice versa. The two channels must be distinct (separate buses OR separate dispatch methods).
+- **No correlation id.** Command/query payload missing `id`/`correlationId`/`causationId` when an event log exists. Optional rule — flag only if the project already uses event sourcing or audit logs.
+
+### Read model / projection (only when project uses them)
+
+- **Read model written by app code.** Read model tables/collections updated from anywhere except a projector.
+- **Projector reaches into the write model live.** Projector pulls write-model state on each query instead of reacting to events.
+- **No staleness contract.** Read model used without a documented eventual-consistency expectation (comment, ADR, or schema annotation).
+
+### Naming
+
+- **Command name not imperative.** Use `CreateOrder`, `ShipOrder`, not `OrderCreator`, `OrderShipping`.
+- **Query name not a noun phrase.** Use `GetOrderById`, `ListPendingOrders`, not `FindOrder` (ambiguous) or `OrderQuery` alone.
+
+## Output
+
+Same shape as `/solid`. Severity scale:
+- 🔴 high — mutation in query, read-then-return command, handler-to-handler call → correctness/consistency risk
+- 🟡 medium — fat handler, mixed model, missing read/write split where the project claims CQRS
+- 🟢 low — naming, missing correlation id
+
+```
+# /cqrs — <N> files scanned · <M> findings
+
+## Findings
+| Severity | Rule | File:Line | Symptom | Fix (one line) |
+|---|---|---|---|---|
+| 🔴 | Mutation-in-query | src/queries/GetUserDashboardQuery.ts:31 | calls prisma.user.update on last-seen | move write to a TouchUserLastSeen command or a projector |
+| 🔴 | Handler→Handler | src/commands/ShipOrderHandler.ts:54 | calls reserveStockHandler.handle directly | dispatch ReserveStock via the bus or emit OrderShipped event |
+| 🟡 | Mixed model | src/queries/GetOrderQuery.ts:12 | returns Order entity | return OrderReadDto |
+| 🟢 | Naming | src/commands/OrderShipping.ts:1 | non-imperative command name | rename to ShipOrder |
+
+## Skipped
+- src/generated/** (generated)
+
+## Project flavour detected
+<one line: "full CQRS with separate buses + projections" | "C/Q separation only, no buses" | "no CQRS conventions present">
+
+## Top fix
+<one sentence on the highest-leverage finding>
+```
+
+If the scan detects no CQRS conventions at all (no `commands/`, `queries/`, no `*Command*`/`*Query*` naming, no bus), output one line and stop:
+
+`/cqrs — no CQRS conventions detected in scope. Skill is a no-op. Use /solid for general OOP review.`
+
+## Cost discipline
+
+Same as `/solid`:
+- No file dumps. Grep first, slice second.
+- One pass per rule across scope, not per file.
+- No subagents. No web/docs lookup. No edits. No commits.
+- Hard cap 30 files per run.
+
+## Suppressions
+
+`.cqrsignore` at repo root, same format as `.solidignore`:
+
+```
+src/legacy/**:Mixed-model
+src/queries/GetUserDashboardQuery.ts:Mutation-in-query
+```
+
+Apply silently. Footer line: `Suppressed: N findings via .cqrsignore`.
+
+## Integration with `/clean-code`
+
+`/cqrs` findings feed into `.nybo/foundation/adrs/code-practice.yml` via `/clean-code`. Run standalone for advisory-only; run `/clean-code` to auto-fix and persist.
+
+## Recurring runs
+
+`/loop 1d /cqrs` or per-PR. Designed to stay quiet — if no findings, output is one line.
+
+## When to stop
+
+Investigative + advisory. Never refactor, never touch git, never call other slash commands.

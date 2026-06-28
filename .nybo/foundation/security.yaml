@@ -1,0 +1,10 @@
+security:
+  - id: auth-model
+    description: >-
+      Auth model: Simulated demo login with no backend. Login accepts a
+      one-click demo button or displayed demo credentials; a session flag is
+      stored in localStorage. No real credential validation occurs.
+  - id: sensitive-1
+    description: >-
+      Sensitive: None — all content is demo data; no real user PII is collected
+      or stored.

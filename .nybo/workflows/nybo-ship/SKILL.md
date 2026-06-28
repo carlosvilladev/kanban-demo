@@ -1,0 +1,257 @@
+---
+name: nybo-ship
+description: Close a feature — update CHANGELOG, commit, push, open the PR, post a Quality Report, and watch CI until green. Runs after `/nybo-curate` completes. Single owner of the closing flow; `/nybo-pr` is deprecated and forwards here.
+---
+
+Update CHANGELOG.md, commit pending changes, push, open or refresh the PR with a Quality Report block, then poll CI via `ScheduleWakeup` and iterate fixes until the run is green.
+
+## Precondition (run before every step)
+
+0. **Status guard** — read `docs/<feature>/status.yaml`. The skill asserts `status === 'verified'` (fresh ship) OR `status === 'pr-ready'` (resume after Ctrl-C / re-invocation).
+   - If status is `verified` → proceed at step 1.
+   - If status is `pr-ready` → resume from step 5 (PR is already open, CI may still be running). Do NOT re-write `pr_opened_at` — the original timestamp is the source of truth.
+   - If status is neither → exit with a clear precondition error: `Cannot ship: status is '<current>'. Run /nybo-verify <feature> first.` No git mutations on precondition failure.
+
+The precondition is idempotent: re-running on a resumed ship is safe because every downstream step has its own idempotency check (see step-boundary skip conditions below).
+
+## Steps to follow
+
+1. **Update CHANGELOG.md**
+   - Run `git status` and `git diff` to see what changed.
+   - **If CHANGELOG already contains a bullet matching the HEAD commit subject for this push, skip step 1.** This is the step-1 idempotency check — re-invocation on a partially-completed ship MUST be a no-op when the CHANGELOG entry is already in place.
+   - Open `CHANGELOG.md` in the project root. It follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and has an `## [Unreleased]` section at the top.
+   - If `CHANGELOG.md` is missing, create it with this skeleton:
+     ```
+     # Changelog
+
+     All notable changes to this project will be documented in this file.
+
+     The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+     ## [Unreleased]
+     ```
+   - Append a bullet under the right category inside `## [Unreleased]`. Create the category heading if it is not there yet:
+     - `### Added` — net-new features, endpoints, screens, pages, SDK methods.
+     - `### Changed` — behavior changes to existing features, UI redesigns, refactors with observable effects.
+     - `### Fixed` — bug fixes.
+     - `### Deprecated` — soon-to-be-removed features still working.
+     - `### Removed` — deleted features, endpoints, routes.
+     - `### Security` — auth / permission / sensitive-data fixes.
+   - Bullet format: imperative, lowercase, include the scope prefix when relevant:
+     ```
+     - feat(<scope>): <what shipped> — <why it matters in one sentence>
+     - fix(<scope>): <what was broken> — <what changed>
+     - chore(<scope>): <what was refactored> — <why>
+     ```
+   - Summarize the **shipped outcome**, not a literal list of commits. One bullet per logical shipment.
+   - Do NOT rewrite or remove existing `[Unreleased]` entries — only append.
+   - Do NOT invent a version number; only the user promotes `[Unreleased]` → `[x.y.z]` when cutting a release.
+   - Skip CHANGELOG only if the push is purely docs/internal tooling with zero user-visible effect (say so in the final report).
+
+1b. **Compact docs**
+   - **Idempotency check**: if `docs/<feature>/SUMMARY.md` already exists AND `.nybo/pre-ship/<feature>/` contains a spec tree → skip step 1b.
+   - Write `docs/<feature>/SUMMARY.md` (derive content from `spec/requirement.md` or `spec/spec.md`):
+     ```markdown
+     # <feature>
+
+     Shipped: <YYYY-MM-DD>
+
+     ## What shipped
+     <one paragraph summarising the outcome>
+
+     ## Areas changed
+     - <file or module>
+
+     ## Key decision
+     <one-liner from the spec's tradeoffs table or ADR>
+     ```
+   - Move spec subdirs to `.nybo/pre-ship/<feature>/` (gitignored). For each of `spec`, `feat`, `evidence`, `contract` — if the subdir exists: `mkdir -p .nybo/pre-ship/<feature> && mv docs/<feature>/<subdir> .nybo/pre-ship/<feature>/`.
+   - Unstage any previously staged spec files: `git rm --cached -r docs/<feature>/spec docs/<feature>/feat docs/<feature>/evidence docs/<feature>/contract 2>/dev/null || true`
+   - Stage only the summary: `git add docs/<feature>/SUMMARY.md`
+
+2. **Stage & commit**
+   - **If commit already exists for the staged diff (i.e. `git diff --cached` is empty AND `git log -1 --format=%s` matches the planned subject), skip step 2.** This is the step-2 idempotency check.
+   - Re-run `git status` to confirm `CHANGELOG.md` is included.
+   - Run `git log -5 --oneline` to match the repo's commit style.
+   - Stage only relevant files (never `gcp-key.json`, `.env`, or other secrets).
+   - Write a **Conventional Commits** subject — `<type>(<scope>): <description>`. Allowed types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`, `build`, `ci`, `style`. Map `status.yaml.action_type` (`ADD`/`UPD`/`FIX`) → commit type per `.nybo/memory/domains/git.md`. Never use the legacy `[TICKET][ACTION]` shape — release-please cannot parse it.
+   - If a `ticket:` is set in `status.yaml`, add a `Refs: <TICKET>` footer.
+   - Use a heredoc to pass the message, appending the Co-Authored-By trailer:
+     ```
+     feat(<scope>): <imperative one-liner>
+
+     <optional body explaining why>
+
+     Refs: <TICKET>          # only when status.yaml.ticket is set
+     Co-Authored-By: Claude Opus 4.7  <noreply@anthropic.com>
+     ```
+
+3. **Push**
+   - Push the current branch: `git push origin <branch>`.
+   - This fires the `post-push-ci-monitor` hook coordination — see step 5 for the session-flag write that prevents duplicate watchers.
+
+4. **PR (feature branches only)**
+   - **If PR already open for the current branch (per `gh pr list --head <branch> --json number,url`), skip PR creation and fall through to refresh body + step 4a.** This is the step-4 idempotency check — resume from `pr-ready` must NOT re-create or re-write `pr_opened_at`.
+   - Check current branch: `git rev-parse --abbrev-ref HEAD`.
+   - Determine the repo slug: `git remote get-url origin` and parse `owner/repo`.
+   - If the branch is NOT one of `main`, `master`, `develop`, `staging`:
+     - Check for an existing PR: `gh pr list --head <branch> --repo <owner/repo> --json number,url`.
+     - **Collect Quality Report metrics** (step 4a) — compute before writing the body so the report is embedded in the PR.
+     - Build the PR body from the actual diff — fill every section with real content:
+       - **Summary**: 3–5 outcome-focused bullets.
+       - **Backend Changes**: omit if no backend changes.
+       - **Frontend Changes**: omit if no frontend changes.
+       - **Automated Testing**: ONLY what the suite verified programmatically.
+       - **Suggestions**: optional follow-ups.
+       - **Quality**: gauge table from step 4a, last section before the Claude Code trailer.
+     - If no PR exists, create one:
+       ```
+       gh pr create --base main --title "<concise title from latest commit>" --body "$(cat <<'EOF'
+       ## Summary
+       - <real bullet>
+
+       ## Backend Changes
+       - <real content or omit section>
+
+       ## Frontend Changes
+       - <real content or omit section>
+
+       ## Automated Testing
+       - <test suite results or "No automated test changes in this PR.">
+
+       ## Suggestions
+       - <optional follow-ups>
+
+       <!-- quality-report:start -->
+       ## Quality
+       <gauge table from step 4a>
+       <!-- quality-report:end -->
+
+       ---
+       🤖 Generated with [Claude Code](https://claude.com/claude-code)
+       EOF
+       )"
+       ```
+     - If a PR already exists, fetch its body (`gh pr view <n> --json body -q .body`), replace the block between `<!-- quality-report:start -->` and `<!-- quality-report:end -->` with the fresh report (or insert before the trailing `---` if markers are absent), then `gh pr edit <number> --body "..."`.
+     - Print the PR URL.
+   - If the branch IS a main branch, skip PR creation entirely.
+   - **Status transition (verified → pr-ready)**: after a successful `gh pr create`, write `status: pr-ready`, `pr_url`, `pr_number`, and `pr_opened_at` to `docs/<feature>/status.yaml` in a single atomic write. Log a `status_advanced` event with `details: {from: verified, to: pr-ready, trigger: nybo-ship}`. Log a `pr_created` event. The write is atomic: stage all four fields and emit one `writeFileSync` (do not partial-update). On resume from `pr-ready`, do NOT re-write `pr_opened_at` — the original timestamp is the source of truth.
+
+4a. **Quality Report — generic gauge block**
+
+   Compute once per ship, inject between `<!-- quality-report:start -->` and `<!-- quality-report:end -->` markers so re-runs replace cleanly. Implementation lives in `src/services/ship-quality-report.ts` (call `computeQualityReport(baseRef)` then `renderMarkdown(report)`); fall back to inline computation if the service is unavailable.
+
+   **Base ref**: `$(gh pr view <n> --json baseRefName -q .baseRefName 2>/dev/null || echo main)`. Call it `BASE`.
+
+   **Changed files**: `git diff --name-only origin/$BASE...HEAD`. Filter to source files (skip lockfiles, generated files, fixtures, snapshots).
+
+   **Metrics** — each metric is fail-open: if the underlying tool is absent, gauge is `—` and value is `n/a — <tool> not installed`. Never block a ship on a missing tool.
+
+   | Metric | How to compute |
+   |--------|----------------|
+   | Coverage | Project's coverage tool scoped to changed files. JS/TS: `jest --coverage --changedSince=origin/$BASE --coverageReporters=json-summary`. Python: `pytest --cov --cov-report=json`. Go: `go test -cover ./... -coverprofile`. Report overall % and Δ vs `BASE`. |
+   | Size | `git diff --shortstat origin/$BASE...HEAD` → files, +lines, -lines. Label S/M/L/XL (<200 / 200–600 / 600–1500 / >1500). |
+   | Complexity | `eslint --rule '{complexity:[error,10]}'`, `radon cc -s`, `gocyclo`. Report max + location. |
+   | Duplication | `npx jscpd --pattern '<changed files>' --threshold 0 --reporters json`. Count duplicated blocks. |
+   | Security | `npm audit --json` delta (new high/critical) + `gitleaks detect --no-banner --redact --log-opts origin/$BASE..HEAD`. Multi-tool — report new vulns + secrets. |
+   | Type safety | Count new `\bany\b`, `@ts-ignore`, `@ts-expect-error`, `# type: ignore`, `eslint-disable` on added diff lines only. |
+   | Lint | Project lint on changed files; warning delta vs baseline. |
+   | Tests | Count new/modified test files. Compute test-to-code ratio: test LOC added / non-test LOC added. |
+
+   **Thresholds** (generic, apply regardless of stack):
+
+   | Metric | 🟢 | 🟡 | 🔴 |
+   |--------|----|----|----|
+   | Coverage (changed) | ≥80% | 60–79% | <60% |
+   | Coverage Δ vs base | ≥0% | -3 to 0% | <-3% |
+   | Size (LOC changed) | <200 | 200–600 | >600 |
+   | Complexity (max) | ≤10 | 11–15 | >15 |
+   | Duplication blocks | 0 | 1–2 | ≥3 |
+   | Security | 0 issues | low-sev only | any high/critical or secrets |
+   | Type safety (new) | 0 | 1–3 | >3 |
+   | Lint warnings Δ | ≤0 | 1–5 | >5 |
+   | Test/code ratio | ≥0.5 | 0.2–0.5 | <0.2 |
+
+   **Verdict rule**: 🔴 if any metric red. 🟡 if any yellow. Else 🟢. One sentence.
+
+4b. **Jira transition (optional)**
+   - If `status.yaml.ticket` is set AND the Atlassian MCP is available, transition the ticket to "In Review" (or the project's synonym — `Code Review`, `Review`, `In PR`).
+   - Use the MCP's `transitionIssue` tool. If the MCP is absent, skip silently and note in the final report.
+   - If the transition fails (permissions, missing status), log a `jira_transition_attempted` event with `details: {ticket, target, ok: false, reason}` and continue. Never block the ship on a Jira failure.
+
+5. **Poll GitHub Actions via `ScheduleWakeup`**
+   - Never use `--watch` or `gh run watch` — they stream continuously and waste tokens.
+   - **Write the session flag** before the first wake-up: `.nybo/state/nybo-ship-session.json` with `{"nybo_ship_polling": true, "started_at": "<ISO timestamp>"}`. The `post-push-ci-monitor` hook reads this flag and skips dispatching a duplicate watcher while it is fresh (age < 600s). This prevents the hook + skill from racing on the same PR.
+   - **First wait: `ScheduleWakeup` with `delaySeconds: 120`** (2 minutes) so the session suspends instead of blocking. Pass the current `/ship` prompt as the `prompt` field.
+   - On wake-up, determine `<owner/repo>` from `git remote get-url origin`, then poll:
+   - For **feature branches**:
+     - Poll: `gh pr checks <pr-number> --repo <owner/repo>`.
+     - If any check is still `pending` or `in_progress`, `ScheduleWakeup` with `delaySeconds: 60` and resume.
+     - Repeat until every check shows `pass` or `fail`.
+   - For **main branches**:
+     - Get the run ID: `gh run list --limit 2 --repo <owner/repo>`.
+     - Poll: `gh run view <run-id> --repo <owner/repo> --json status,conclusion`.
+     - If `status` is not `completed`, `ScheduleWakeup` with `delaySeconds: 60` and resume.
+
+6. **Fix failures**
+   - If any job failed: `gh run view <run-id> --repo <owner/repo> --log-failed`.
+   - Diagnose root cause, apply the fix, go back to step 1, and repeat until the run is fully green.
+   - When fixing and re-shipping, append a new bullet to `[Unreleased]` only if the fix is a user-visible change from what the earlier push shipped; otherwise amend the existing bullet's description.
+   - Never retry the same failing command without changing something.
+
+7. **Done — status transition + build log + ship event**
+   - **If CI is already green AND `gh pr view <n> --json mergedAt` reports a non-null `mergedAt`, exit with the URLs.** This is the step-7 idempotency check — resume on a fully-shipped feature is a no-op.
+   - **Status transition (pr-ready → shipped)**: after CI is green AND the PR is merged, write `status: shipped` and `shipped_at` to `docs/<feature>/status.yaml` in a single atomic write. Log a `status_advanced` event with `details: {from: pr-ready, to: shipped, trigger: nybo-ship}`.
+   - Invoke the `/nybo-build-log` skill for this feature (or run `nybo build-log <feature>` directly). The skill renders `docs/<feature>/feat/11-build-log.md` and logs the `spec_shipped` event with the build-log path in `details`. Skipping leaves the feature without a durable narrative — diffs answer *what*, the build log answers *why*.
+   - **Clear the session flag**: delete `.nybo/state/nybo-ship-session.json` (and clean up an empty `.nybo/state/` parent if nothing else lives there). Clear on early exit too — wrap step 5 onward in a try/finally analog so a Ctrl-C does not leave a stale flag.
+   - Report the final green run URL, the PR URL (if created), the build-log path, and which CHANGELOG entries were added (or that CHANGELOG was intentionally skipped for a docs-only push).
+
+## Integration with `.nybo/`
+
+This skill is part of the nybo workflow lifecycle stored under `.nybo/workflows/nybo-ship/`. The `post-push-ci-monitor` hook in `.claude/settings.json` fires after `git push` so CI watching is autonomous. Trust gating applies — at L1 supervised the hook prompts; L2+ runs silently. The session-flag handshake (step 5 write, step 7 clear) is what prevents the hook + this skill from running duplicate watchers on the same PR.
+
+Events emitted per successful ship: `status_advanced` (verified → pr-ready), `pr_created`, `status_advanced` (pr-ready → shipped), then `spec_shipped` from the build-log step. `status_advanced` is observability-only (not mapped to Hub, not consumed by `trust-evaluator`). The canonical lifecycle order is `plan → run → verify → curate → ship` — `/nybo-pr` has been merged into this skill and survives one release as a deprecation shim.
+
+---
+
+## Subcommand: `distill <feature>`
+
+A post-shipped operation that lifts architectural knowledge from a shipped feature into the managed block of `.nybo/foundation/architecture.md`, records dashboard-consumable state in `.nybo/state/SHIPPED.md`, and archives the spec to `.nybo/archived/<feature>/`. **Not part of the 7-step close-the-feature flow** — distill runs after `status: shipped` and the `shipped/<feature>-<ISO>` tag has been applied (curate-success). Manual-trigger only in V1.
+
+### Trigger
+
+`/nybo-ship distill <feature>` — equivalent to running `nybo distill <feature>` from the shell. The skill dispatches to the CLI; this section is the discoverable doc for users who reach for `/nybo-ship` first.
+
+### Flags
+
+- `--force` — skip the grace-period check (default 7 days from tag date; configurable via `nybo.config.yaml` key `distill.grace_period_days`)
+- `--skip` — archive only; do NOT invoke the distiller agent
+- `--dry-run` — render full diff + planned moves; make zero file mutations
+- `--no-archive` — apply memory changes; keep `docs/<feature>/` in place
+- `--grace-days <n>` — override config for this invocation only
+
+### Atomic execution order
+
+The CLI orchestrator (`src/services/ship-distill.ts`) runs the following sequence; steps ≥ 7 trigger snapshot-based rollback on failure:
+
+1. Pre-flight: tag exists, grace met, `.gitignore` contains `.nybo/archived/`, archive target free
+2. Read sources (spec, feat/*, contract/, ADRs, existing `.nybo/foundation/architecture.md`, prior SHIPPED.md)
+3. Dispatch `distiller` agent (`.claude/agents/distiller.md`)
+4. Validate delta in-process (≤30 lines, dated header, rationale substring-found)
+5. Build SHIPPED.md entry
+6. Diff preview + accept gate
+7. Snapshot `.nybo/foundation/architecture.md` + SHIPPED.md + CHANGELOG byte lengths
+8. Write architecture delta inside managed block (append-only)
+9. Append SHIPPED.md
+10. Append CHANGELOG entry (`feat(<area>): <summary>`)
+11. Move `docs/<feature>/` → `.nybo/archived/<feature>/` (LAST destructive step)
+12. `git add` (do NOT commit)
+13. Log `distill_completed`
+
+### Events emitted
+
+`distill_started, distill_proposed, distill_accepted | distill_rejected, distill_completed | distill_failed`. None are mapped to Hub in V1.
+
+### Recovery
+
+Archived spec content can be recovered from git history: `git show <spec_sha>:docs/<feature>/spec/spec.md` (the `spec_sha` is recorded in the SHIPPED.md entry).

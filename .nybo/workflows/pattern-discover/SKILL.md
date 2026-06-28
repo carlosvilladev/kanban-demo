@@ -1,0 +1,108 @@
+---
+name: pattern-discover
+description: Capture an architectural pattern decision from a conversation and persist it to .nybo/foundation/adrs/code-practice.yml so future /clean-code runs can apply it mechanically. Triggers on "/pattern-discover", "save this pattern", "record this pattern", "lock this in as a pattern", "this is the pattern for X going forward".
+---
+
+# /pattern-discover
+
+Capture a pattern decision once, apply it many times.
+
+## When to use
+
+Invoke after the conversation has settled on an architectural pattern that the team plans to apply to MORE THAN ONE place. Examples:
+
+- "We're using awilix DI for all services going forward."
+- "Long parameter lists become param objects named `<Method>Params`."
+- "Domain entities use Zod schemas at the boundary."
+- "Repositories never call other repositories — always through a service."
+
+Skip if the decision is one-off (a bug fix, a refactor in a single file with no plan to repeat).
+
+## What it does
+
+Reads the recent conversation context and the existing `.nybo/foundation/adrs/code-practice.yml`. Proposes one or more of the following entries, then writes after user confirms:
+
+1. **`patterns:` entry** — structured definition the skill can re-apply later via `/clean-code --apply-pattern <id>`. Always added when the decision describes a mechanical transformation.
+2. **`decisions:` (ADR) entry** — prose rationale for the choice. Always added.
+3. **`conventions:` entry** — only when the pattern should be auto-enforced by `/solid` / `/clean-code` rules.
+4. **`suggestions:` cleanup** — if the new pattern obsoletes some open suggestions, offer to dismiss them with `reason: superseded by <ADR-id>`.
+
+Optionally offers a fifth action:
+
+5. **Promote to org tier** — copy the `patterns:` + `decisions:` entries to `~/.claude/skills/clean-code/code-practice.template.yml` so future repos inherit them.
+
+## Workflow
+
+1. **Read context**: load `code-practice.yml` (project tier) and the last ~50 turns of the conversation.
+2. **Identify the pattern**: in your own words, write a one-sentence description of what was decided. Show it to the user and ask "is this the pattern?" If they correct it, update.
+3. **Draft the `patterns:` entry**. Schema:
+   ```yaml
+   - id: <kebab-slug>            # stable, e.g. awilix-di-migration
+     name: <human label>
+     decided_in_adr: ADR-<NNN>   # link to the ADR row
+     created_at: <ISO-8601>
+     match:
+       red_flag: <terse smell signature>
+       file_glob: <where to look>
+       detector: <one-line how to grep/detect>
+     transform:                  # ordered mechanical steps
+       - step: <one line>
+       - step: <one line>
+     tests_strategy: <one line>
+     examples:                   # already-applied files, used as reference for future application
+       - <path>
+     callers_pattern: <how to handle existing callers — bridge / migrate-now / advisory>
+     lane: auto-fix | confirm-required | advisory
+   ```
+4. **Draft the ADR** entry (`decisions:`). Schema follows the existing one in the yaml — `id`, `title`, `status: accepted`, `applies_to`, `blocks_rules` (optional), `note` ≤ 200 chars.
+5. **Optionally draft a convention** if the pattern should auto-enforce. Schema also follows existing entries.
+6. **Show the diff** to the user before writing. Ask for approval. Apply only on `yes`.
+7. **Write the file**. Validate YAML parses; refuse to overwrite on parse error (show the diff instead).
+8. **Offer org-tier promotion** if the pattern would apply across most projects.
+
+## Hard rules
+
+- **Never overwrite** existing `patterns:`, `decisions:`, or `conventions:` entries. If the user wants to update one, they explicitly edit or invoke `/pattern-discover --update <id>`.
+- **Never auto-add** without explicit user confirmation. Skill always shows the diff first.
+- **IDs never reused**: `patterns:` ids are kebab-slug strings, `decisions:` ids are `ADR-NNN` monotonic. Check existing entries; refuse on duplicate.
+- **Stay terse**: the yaml is agent-readable. No long prose. Multi-paragraph rationale belongs in commit messages or linked ADR markdown files, not in `note:` fields.
+- **No scope creep**: this skill only writes to `code-practice.yml` (and optionally the org template). Does NOT touch source code. Does NOT run tests. Does NOT modify the suggestion backlog except to mark superseded entries dismissed (with user confirmation).
+
+## How `/clean-code` uses what this skill writes
+
+- `/clean-code` (any mode) loads `patterns:` at start. Future scans cross-reference suggestions against patterns — if a suggestion matches a pattern's `match.detector`, the skill notes `suggested_pattern: <pattern-id>` on it.
+- `/clean-code --apply-pattern <pattern-id> --to <file | suggestion-id>` reads the pattern's `transform:` steps and applies them through the standard fix loop (TDD gate, baseline + post-batch test runs, revert on red).
+- `/clean-code --show-patterns` lists all recorded patterns.
+
+## Examples
+
+### Example 1 — capture today's awilix decision
+
+```
+user: /pattern-discover
+assistant: I think the pattern is: "Migrate a singleton service (static getInstance + private constructor) to awilix DI by registering it in src/lib/container.ts, making constructor public, and adding a deprecated bridge getInstance() that resolves via the container." Is that the pattern?
+user: yes
+assistant: [shows YAML diff with patterns:awilix-di-migration entry referencing ADR-006, plus offers to retire SRP god-class suggestions S-006..S-010 only if they're now blocked by the pattern]
+user: apply
+assistant: [writes yaml, confirms]
+```
+
+### Example 2 — explicit slug + scope
+
+```
+user: lock this in as the param-object pattern for our services
+assistant: [drafts patterns:param-object-extraction with red_flag "function signature with > 4 positional params", linked to ADR-002 / convention param-object-over-4]
+```
+
+## Boundaries
+
+- Plays nicely with `nybo-curate` (which writes to `.claude/rules/nybo-*.md` and `.nybo/memory/domains/*.md`). This skill is `code-practice.yml`-specific. If a user wants a broader convention (e.g. naming, error handling) recorded, route to `/nybo-curate` instead.
+- Never modifies the `last_run:` or `history:` blocks of `code-practice.yml` — those are owned by `/clean-code`.
+- Never adds to `applied:` or `dismissed:` lists silently — both transitions require explicit user instruction.
+
+## When NOT to use
+
+- One-off architectural decisions (no plan to repeat) → just write a commit message, no ADR needed.
+- Naming or style decisions → use `/nybo-curate` conventions mode.
+- Domain knowledge / business rules → use `/nybo-curate` domains mode.
+- Per-feature design decisions → write an ADR markdown file in `docs/feat/<name>/` directly.

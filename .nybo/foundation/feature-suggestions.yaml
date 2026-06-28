@@ -1,0 +1,154 @@
+schemaVersion: '1.1'
+generatedAt: '2026-06-28T22:12:41.000Z'
+suggestions:
+  - id: fs-001
+    title: Authentication & session management
+    description: >-
+      Set up Simulated demo login (no backend) for user login, registration, and
+      session handling.
+    discoveryContext: >-
+      Business outcome: Secure access to kanban-demo so only authorized users
+      can interact with protected resources.
+
+      Who benefits: All users who need to log in; admins who manage access
+      control.
+
+      Constraints & edge cases: Sessions should expire after inactivity.
+      Password reset flow required. Consider brute-force protection and account
+      lockout policy.
+
+      Scope: Login, registration, session lifecycle, and password reset.
+      Role-based permissions and OAuth providers are out of scope for this
+      feature.
+    category: suggested
+    priority: 1
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+  - id: fs-002
+    title: Database schema & migrations
+    description: >-
+      Define the initial schema for localStorage (browser) and set up a
+      migration workflow.
+    discoveryContext: >-
+      Business outcome: Establish a stable, versioned data foundation that all
+      other features build on.
+
+      Who benefits: The entire development team — every feature depends on a
+      correct schema.
+
+      Constraints & edge cases: Migrations must be reversible. Avoid breaking
+      changes to existing tables once data exists. Index columns used in
+      frequent queries.
+
+      Scope: Initial schema for core entities, migration tooling setup, and seed
+      data for development. Data archival and multi-tenancy are out of scope.
+    category: suggested
+    priority: 2
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+  - id: fs-003
+    title: Board management
+    description: >-
+      Build CRUD operations for Board: The single Kanban board containing an
+      ordered set of columns.
+    discoveryContext: >-
+      Business outcome: Allow users to manage Board records so core workflows in
+      kanban-demo can function end to end.
+
+      Who benefits: Users who create or interact with Board data as part of
+      their primary workflow.
+
+      Constraints & edge cases: Deletes should be soft where data history
+      matters. List views need pagination. Access should be scoped by user role
+      or ownership.
+
+      Scope: Full CRUD for Board including list, detail, create, edit, and
+      delete. Bulk operations and import/export are out of scope for this
+      feature.
+    category: suggested
+    priority: 3
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+    sourceEntities:
+      - Board
+  - id: fs-004
+    title: Column management
+    description: >-
+      Build CRUD operations for Column: A fixed workflow stage (To Do / In
+      Progress / Done) holding an ordered list of tasks.
+    discoveryContext: >-
+      Business outcome: Allow users to manage Column records so core workflows
+      in kanban-demo can function end to end.
+
+      Who benefits: Users who create or interact with Column data as part of
+      their primary workflow.
+
+      Constraints & edge cases: Deletes should be soft where data history
+      matters. List views need pagination. Access should be scoped by user role
+      or ownership.
+
+      Scope: Full CRUD for Column including list, detail, create, edit, and
+      delete. Bulk operations and import/export are out of scope for this
+      feature.
+    category: suggested
+    priority: 4
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+    sourceEntities:
+      - Column
+  - id: fs-005
+    title: Task management
+    description: >-
+      Build CRUD operations for Task: A card representing a unit of work;
+      belongs to exactly one column.
+    discoveryContext: >-
+      Business outcome: Allow users to manage Task records so core workflows in
+      kanban-demo can function end to end.
+
+      Who benefits: Users who create or interact with Task data as part of their
+      primary workflow.
+
+      Constraints & edge cases: Deletes should be soft where data history
+      matters. List views need pagination. Access should be scoped by user role
+      or ownership.
+
+      Scope: Full CRUD for Task including list, detail, create, edit, and
+      delete. Bulk operations and import/export are out of scope for this
+      feature.
+    category: suggested
+    priority: 5
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+    sourceEntities:
+      - Task
+  - id: fs-006
+    title: DemoUser management
+    description: >-
+      Build CRUD operations for DemoUser: The simulated authenticated user for
+      the demo session.
+    discoveryContext: >-
+      Business outcome: Allow users to manage DemoUser records so core workflows
+      in kanban-demo can function end to end.
+
+      Who benefits: Users who create or interact with DemoUser data as part of
+      their primary workflow.
+
+      Constraints & edge cases: Deletes should be soft where data history
+      matters. List views need pagination. Access should be scoped by user role
+      or ownership.
+
+      Scope: Full CRUD for DemoUser including list, detail, create, edit, and
+      delete. Bulk operations and import/export are out of scope for this
+      feature.
+    category: suggested
+    priority: 6
+    status: pending
+    createdAt: '2026-06-28T22:12:41.000Z'
+    origin: scan
+    sourceEntities:
+      - DemoUser

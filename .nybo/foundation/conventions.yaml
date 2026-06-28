@@ -1,0 +1,29 @@
+conventions:
+  - id: convention-1
+    description: >-
+      This is a demo — prioritize zero setup, believable seed data, and visual
+      polish over completeness.
+  - id: convention-2
+    description: No backend and no real auth; the entire app runs client-side.
+  - id: convention-3
+    description: TypeScript throughout; functional React components with hooks.
+  - id: invariant-1
+    description: A task belongs to exactly one column at any time.
+  - id: invariant-2
+    description: No drag-and-drop outcome (success or cancel) may duplicate or lose a task.
+  - id: invariant-3
+    description: Demo seed data is applied only when no saved state exists in localStorage.
+  - id: invariant-4
+    description: >-
+      Once the user modifies state, their saved state takes precedence over the
+      seed.
+  - id: invariant-5
+    description: >-
+      Corrupt or missing localStorage state must fall back to seed data — never
+      crash or show an empty board.
+  - id: invariant-6
+    description: >-
+      Every state change (create, edit, delete, move, reorder) auto-persists to
+      localStorage; there is no manual save.
+  - id: invariant-7
+    description: Logging out clears the session but never deletes board data.

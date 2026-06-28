@@ -1,0 +1,6 @@
+name: kanban-demo
+description: >-
+  A frontend-only demo drag-and-drop Kanban board. Showcases a simulated login,
+  a board pre-seeded with realistic demo tasks, full task CRUD, and fluid
+  drag-and-drop across fixed columns. All state persists to localStorage; there
+  is no backend. Purpose is to impress in a short, zero-setup walkthrough.
