@@ -3,3 +3,6 @@
 {"timestamp":"2026-06-28T23:14:44.964Z","type":"spec_created","actor":"agent","spec":"drag-and-drop","details":{"feature":"drag-and-drop","compact":true,"compact_default":true,"task_count":4,"domains_referenced":["drag-and-drop","board","persistence"]}}
 {"timestamp":"2026-06-28T23:15:19.387Z","type":"spec_created","actor":"agent","spec":"kanban-board","details":{"feature":"kanban-board","compact":true,"compact_default":true,"task_count":4,"domains_referenced":["board","drag-and-drop","persistence"]}}
 {"timestamp":"2026-06-28T23:17:04.552Z","type":"spec_created","actor":"agent","spec":"persistence-seed","details":{"feature":"persistence-seed","compact":false,"task_count":4,"domains_referenced":["persistence","board"]}}
+{"timestamp":"2026-06-28T23:57:50.000Z","type":"spec_execution_started","actor":"agent","spec":"kanban-board","details":{"task_count":4}}
+{"timestamp":"2026-06-29T00:04:02.000Z","type":"run_completed","actor":"agent","spec":"kanban-board","details":{"tasks_done":4,"tasks_blocked":0,"test_count":68,"coverage_pct":95.35}}
+{"timestamp":"2026-06-29T00:45:45.412Z","type":"doctor_run","actor":"human","details":{"passing":31,"warnings":4,"failures":1,"total":36}}

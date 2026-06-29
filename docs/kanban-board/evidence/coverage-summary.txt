@@ -1,0 +1,20 @@
+Coverage report from v8 (2026-06-28)
+
+File               | % Stmts | % Branch | % Funcs | % Lines
+-------------------|---------|----------|---------|--------
+All files          |   95.35 |    92.23 |   89.18 |   95.35
+ src/board         |   98.12 |    96.22 |   94.44 |   98.12
+  BoardContext.tsx |   97.05 |    93.33 |   88.88 |   97.05
+  operations.ts    |   98.41 |    97.36 |     100 |   98.41
+ src/components    |   96.48 |    89.58 |   88.23 |   96.48
+  Board.tsx        |     100 |      100 |     100 |     100
+  Column.tsx       |     100 |      100 |     100 |     100
+  ConfirmDialog.tsx|    92.3 |      100 |      50 |    92.3
+  TaskCard.tsx     |     100 |     90.9 |     100 |     100
+  TaskForm.tsx     |   92.53 |    83.33 |      80 |   92.53
+
+Notes:
+  App.tsx excluded (covered by e2e / manual TC-012/013).
+  Uncovered: operations.ts:15-16 (crypto.randomUUID fallback, environment-specific);
+             TaskForm.tsx:50-55 (keyboard submit via Enter, UX path not tested by RTL);
+             ConfirmDialog.tsx:19-20 (Escape key handler, UX-only).

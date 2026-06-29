@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+
+# Test / coverage
+coverage
+
+# Logs
+*.log
+npm-debug.log*
+
+# nybo internal (cache + post-ship archives — never commit)
+.nybo/.cache/
+.nybo/archived/
+
+# Editor / OS
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea

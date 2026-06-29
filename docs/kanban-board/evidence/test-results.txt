@@ -1,0 +1,10 @@
+Test Files  4 passed (4)
+     Tests  68 passed (68)
+  Start at  2026-06-28T19:03:16
+  Duration  785ms
+
+Breakdown:
+  src/board/operations.test.ts        32 tests  (TC-001..006, assertBoardInvariants)
+  src/board/BoardContext.test.tsx       7 tests  (TC-007, store dispatch/re-render)
+  src/components/Board.test.tsx         9 tests  (TC-008, column order/titles/counts)
+  src/components/TaskCard.test.tsx     20 tests  (TC-009..011, AC-014, display)
