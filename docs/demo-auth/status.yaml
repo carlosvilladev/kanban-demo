@@ -1,9 +1,10 @@
 feature: demo-auth
-status: draft
+status: verified
 profile: code
 action_type: ADD
 compact: true
 created_at: 2026-06-28
+verified_at: 2026-06-28
 domains:
   - auth
   - persistence

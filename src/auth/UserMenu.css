@@ -1,0 +1,46 @@
+/* UserMenu — avatar + name badge and logout control in the app header. */
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-menu__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.user-menu__label {
+  font-size: 0.875rem;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.user-menu__logout {
+  height: 34px;
+  padding: 0 14px;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.user-menu__logout:hover {
+  background: #f3f4f6;
+  color: #111827;
+}

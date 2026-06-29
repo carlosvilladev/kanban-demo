@@ -1,0 +1,172 @@
+
+> kanban-demo@0.1.0 test
+> vitest run --reporter=verbose
+
+
+ RUN  v2.1.9 /Users/carlosvilla/Documents/Projects/Nybble/Demos/kanban-project
+
+ ✓ src/board/operations.test.ts > createEmptyBoard > TC-001: returns 3 columns in fixed order, all empty
+ ✓ src/board/operations.test.ts > createEmptyBoard > has correct display titles
+ ✓ src/board/operations.test.ts > createEmptyBoard > satisfies board invariants
+ ✓ src/board/operations.test.ts > createTask > TC-002: appends task to target column, count +1, in exactly one column
+ ✓ src/board/operations.test.ts > createTask > TC-003: rejects empty title — no-op (returns same reference)
+ ✓ src/board/operations.test.ts > createTask > TC-003: rejects whitespace-only title — no-op
+ ✓ src/board/operations.test.ts > createTask > trims title
+ ✓ src/board/operations.test.ts > createTask > defaults description to empty string when not provided
+ ✓ src/board/operations.test.ts > createTask > stores provided description
+ ✓ src/board/operations.test.ts > createTask > does not mutate the input state
+ ✓ src/board/operations.test.ts > createTask > appends to bottom when multiple tasks exist
+ ✓ src/board/operations.test.ts > createTask > can add tasks to different columns independently
+ ✓ src/board/operations.test.ts > updateTask > TC-004: patches title and description; membership and position unchanged
+ ✓ src/board/operations.test.ts > updateTask > patches only title when description is not provided
+ ✓ src/board/operations.test.ts > updateTask > patches only description when title is not provided
+ ✓ src/board/operations.test.ts > updateTask > returns state unchanged for unknown taskId
+ ✓ src/board/operations.test.ts > updateTask > rejects empty title update — no-op
+ ✓ src/board/operations.test.ts > updateTask > rejects whitespace-only title update — no-op
+ ✓ src/board/operations.test.ts > deleteTask > TC-005: removes task from tasks map and from its column taskIds
+ ✓ src/board/operations.test.ts > deleteTask > does not affect other tasks in the same column
+ ✓ src/board/operations.test.ts > deleteTask > returns state unchanged for unknown taskId
+ ✓ src/board/operations.test.ts > deleteTask > does not mutate input state
+ ✓ src/board/operations.test.ts > selectColumnTaskCount > TC-006: returns 0 for empty column
+ ✓ src/board/operations.test.ts > selectColumnTaskCount > TC-006: returns correct count after adding tasks
+ ✓ src/board/operations.test.ts > selectTasksForColumn > returns tasks in insertion order
+ ✓ src/board/operations.test.ts > selectTasksForColumn > returns empty array for empty column
+ ✓ src/board/operations.test.ts > getTaskColumn > TC-006: returns the owning column id
+ ✓ src/board/operations.test.ts > getTaskColumn > TC-006: returns undefined for unknown taskId
+ ✓ src/board/operations.test.ts > assertBoardInvariants > does not throw for a valid board with tasks
+ ✓ src/board/operations.test.ts > assertBoardInvariants > throws when a task exists in tasks map but not in any column
+ ✓ src/board/operations.test.ts > assertBoardInvariants > throws when a task appears in two columns
+ ✓ src/board/operations.test.ts > assertBoardInvariants > throws when a taskId in a column does not exist in the tasks map
+ ✓ src/auth/session.test.ts > readSession > returns null when nothing is stored
+ ✓ src/auth/session.test.ts > readSession > returns null for non-JSON garbage (TC-006: corrupt session)
+ ✓ src/auth/session.test.ts > readSession > returns null for valid JSON but wrong shape (missing user.id)
+ ✓ src/auth/session.test.ts > readSession > returns null when version does not match (version mismatch)
+ ✓ src/auth/session.test.ts > readSession > returns a Session for a valid stored entry (TC-004: session restore)
+ ✓ src/auth/session.test.ts > readSession > never throws even when localStorage.getItem throws
+ ✓ src/auth/session.test.ts > writeSession > persists a valid session to SESSION_KEY
+ ✓ src/auth/session.test.ts > writeSession > returns the Session that was written
+ ✓ src/auth/session.test.ts > clearSession > removes SESSION_KEY from localStorage
+ ✓ src/auth/session.test.ts > clearSession > TC-005: leaves other keys untouched (board data survives logout)
+ ✓ src/auth/session.test.ts > clearSession > does not throw when SESSION_KEY is already absent
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — shape > TC-008: columnOrder is exactly [todo, in-progress, done]
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — shape > TC-008: columns have correct titles
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — shape > TC-008: has at least 6 tasks total
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — shape > TC-008: each column has at least 1 task
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — shape > TC-008: has exactly 8 tasks (3/2/3 distribution)
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — content > TC-009: every task has a non-empty title
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — content > TC-009: every task has a non-empty description
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — content > TC-009: passes isValidBoardState (every task in exactly one column)
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — content > every task id matches its entry key
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — determinism > TC-010: two calls return deeply equal values
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — determinism > TC-010: two calls return distinct object references
+ ✓ src/seed/__tests__/seedData.test.ts > createSeedBoard — determinism > mutating one result does not affect a subsequent call
+ ✓ src/storage/__tests__/boardStorage.test.ts > writeBoard + readBoard round-trip > TC-001: restores a deeply-equal board
+ ✓ src/storage/__tests__/boardStorage.test.ts > writeBoard + readBoard round-trip > round-trip with multiple tasks across columns
+ ✓ src/storage/__tests__/boardStorage.test.ts > envelope shape > TC-002: raw stored value is { version, data } at kanban-demo:board
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > TC-003: returns null when no key exists
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > TC-004: returns null for unparseable JSON
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > TC-005: returns null for version mismatch
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > TC-006a: returns null when columnOrder id missing from columns
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > TC-006b: returns null when taskId in column has no matching task
+ ✓ src/storage/__tests__/boardStorage.test.ts > readBoard — missing / corrupt → null > never throws on any corrupt input
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > TC-007a: accepts a well-formed board
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > TC-007b: accepts a board with multiple tasks in multiple columns
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects null
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects a string
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects missing tasks map
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects missing columns map
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects missing columnOrder
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects columnOrder referencing a missing column
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects a column taskId with no matching task
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects a task that appears in two columns (duplicate)
+ ✓ src/storage/__tests__/boardStorage.test.ts > isValidBoardState > rejects a task in tasks map that appears in no column
+ ✓ src/storage/__tests__/boardStorage.test.ts > clearBoard > removes the board key from localStorage
+ ✓ src/storage/__tests__/boardStorage.test.ts > clearBoard > does not throw when key is already absent
+ ✓ src/storage/__tests__/boardStorage.test.ts > TC-016: storage write never crashes the app > swallows localStorage.setItem throwing
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — empty storage > TC-011: returns source=seeded when no saved state
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — empty storage > TC-011: seeded state equals createSeedBoard()
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — empty storage > TC-011: seed is persisted after first load (readBoard returns it)
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — valid saved state > TC-012: returns source=restored
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — valid saved state > TC-012: restored state matches what was saved
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — valid saved state > TC-012: seed is NOT applied when valid state exists
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — corrupt storage > TC-013: returns source=seeded on bad JSON
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — corrupt storage > TC-013: returns source=seeded on version mismatch
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — corrupt storage > TC-013: never throws
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > loadInitialBoard — corrupt storage > TC-013: returned state is non-empty
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > resetDemo > TC-014: returns a fresh seed deep-equal to createSeedBoard()
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > resetDemo > TC-014: overwrites modified saved state with fresh seed
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > resetDemo > TC-014: storage holds the seed after reset
+ ✓ src/storage/__tests__/boardLifecycle.test.ts > TC-017: reload simulation > restored state equals the mutated state after seed → mutate → write → reload
+ ✓ src/storage/__tests__/useAutoPersist.test.tsx > useAutoPersist > TC-015: calls writeBoard with the initial state on mount
+ ✓ src/storage/__tests__/useAutoPersist.test.tsx > useAutoPersist > TC-015: calls writeBoard again when state changes
+ ✓ src/storage/__tests__/useAutoPersist.test.tsx > useAutoPersist > does not call writeBoard again when same state reference is passed
+ ✓ src/storage/__tests__/useAutoPersist.test.tsx > useAutoPersist > returns void (no return value)
+ ✓ src/components/Board.test.tsx > Board (TC-008) > renders exactly 3 columns
+ ✓ src/components/Board.test.tsx > Board (TC-008) > renders columns in fixed order: To Do → In Progress → Done
+ ✓ src/components/Board.test.tsx > Board (TC-008) > displays correct column titles
+ ✓ src/components/Board.test.tsx > Board (TC-008) > shows 0 count for all empty columns
+ ✓ src/components/Board.test.tsx > Board (TC-008) > shows correct counts when board has tasks
+ ✓ src/components/Board.test.tsx > Board (TC-008) > column count is the same as its taskIds length
+ ✓ src/components/Board.test.tsx > Column empty state > AC-004: shows a non-blank placeholder when column has no tasks
+ ✓ src/components/Board.test.tsx > Column empty state > hides the empty placeholder once a task exists
+ ✓ src/components/Board.test.tsx > Column live count > each column shows only its own task count
+ ✓ src/auth/AuthContext.test.tsx > AuthProvider initial state > starts unauthenticated when no session stored
+ ✓ src/auth/AuthContext.test.tsx > AuthProvider initial state > TC-004: starts authenticated when a valid session is stored on mount
+ ✓ src/auth/RequireAuth.test.tsx > RequireAuth > TC-001: renders LoginScreen when unauthenticated (children not in DOM)
+ ✓ src/auth/RequireAuth.test.tsx > RequireAuth > renders children when authenticated
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > shows the credentials hint
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > prefills username with demo credentials value
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > prefills password with demo credentials value
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > password field uses type="password"
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > renders the "Continue as Demo User" button
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen rendering > renders the "Sign in" submit button
+ ✓ src/auth/AuthContext.test.tsx > login() > TC-002: one-click login (no args) signs in
+ ✓ src/auth/AuthContext.test.tsx > login() > TC-003 valid creds: returns true and signs in
+ ✓ src/auth/AuthContext.test.tsx > login() > TC-003 wrong creds: returns false and leaves state unchanged
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > TC-007: dispatching createTask updates state and re-renders the consumer
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > starts with createEmptyBoard() when no initialState is given
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > uses the provided initialState when given
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > dispatching deleteTask removes the task and re-renders
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > dispatching editTask updates the task
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > throws when useBoard is called outside a BoardProvider
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > selectColumnTaskCount selector reflects current state
+ ✓ src/board/BoardContext.test.tsx > BoardProvider > replaceBoard (REPLACE_BOARD) swaps the entire board wholesale — reset demo path, no merge/duplicate
+ ✓ src/auth/RequireAuth.test.tsx > RequireAuth > shows LoginScreen after logout flips isAuthenticated
+ ✓ src/auth/RequireAuth.test.tsx > UserMenu > TC-007: shows "Logged in as Demo User" and avatar
+ ✓ src/auth/RequireAuth.test.tsx > UserMenu > renders a Log out button
+ ✓ src/auth/RequireAuth.test.tsx > UserMenu > TC-005: clicking Log out calls logout()
+ ✓ src/auth/RequireAuth.test.tsx > UserMenu > TC-005: logout leaves kanban-demo:board key intact
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen interactions > TC-002: clicking Continue as Demo User calls login() with no args
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen interactions > TC-003 valid creds: submitting calls login with username/password
+ ✓ src/auth/AuthContext.test.tsx > logout() > TC-005: logout clears auth state and session key
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > adds a card immediately to the target column after form submit
+ ✓ src/auth/AuthContext.test.tsx > logout() > TC-005: logout never deletes board data key
+ ✓ src/auth/AuthContext.test.tsx > useAuth outside AuthProvider > throws a descriptive error
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen interactions > TC-003 wrong creds: shows inline error when login returns false
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen interactions > no error shown before any submit attempt
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > increments the column count after create
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > TC-003: submit button is disabled when title is empty
+ ✓ src/auth/LoginScreen.test.tsx > LoginScreen interactions > error clears after a successful login attempt
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > submit button is disabled when title is whitespace only
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > closes the form when Cancel is clicked
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > does NOT add a task if the form is cancelled
+ ✓ src/components/TaskCard.test.tsx > TC-009: Create task via the Add form > can add multiple tasks in sequence
+ ✓ src/components/TaskCard.test.tsx > TC-010: Edit task > updates title and description in place after save
+ ✓ src/components/TaskCard.test.tsx > TC-010: Edit task > pre-fills the form with existing title and description
+ ✓ src/components/TaskCard.test.tsx > TC-010: Edit task > save button is disabled when title is cleared
+ ✓ src/components/TaskCard.test.tsx > TC-010: Edit task > cancelling edit restores the original title
+ ✓ src/components/TaskCard.test.tsx > TC-011: Delete task > shows a confirmation dialog when Delete is clicked
+ ✓ src/components/TaskCard.test.tsx > TC-011: Delete task > removes the card when confirm Delete is clicked
+ ✓ src/components/TaskCard.test.tsx > TC-011: Delete task > keeps the card when Cancel is clicked in the dialog
+ ✓ src/components/TaskCard.test.tsx > TC-011: Delete task > dismisses the dialog after a successful delete
+ ✓ src/components/TaskCard.test.tsx > AC-014: task remains in exactly one column across all CRUD ops > after create, task appears in the target column only
+ ✓ src/components/TaskCard.test.tsx > AC-014: task remains in exactly one column across all CRUD ops > after delete, task is absent from all columns
+ ✓ src/components/TaskCard.test.tsx > TaskCard display > shows task title
+ ✓ src/components/TaskCard.test.tsx > TaskCard display > shows description when present
+ ✓ src/components/TaskCard.test.tsx > TaskCard display > does not render a description element when description is empty
+
+ Test Files  12 passed (12)
+      Tests  159 passed (159)
+   Start at  21:32:10
+   Duration  1.03s (transform 281ms, setup 551ms, collect 863ms, tests 930ms, environment 3.18s, prepare 500ms)
+

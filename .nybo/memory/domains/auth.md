@@ -7,12 +7,28 @@ Simulated demo login and session handling.
 <!-- added: 2026-06-28 | feature: smart-init | confidence: medium | verified: 2026-06-28 -->
 - Session is a flag persisted to localStorage; logout clears it but never deletes board data.
 <!-- added: 2026-06-28 | feature: smart-init | confidence: medium | verified: 2026-06-28 -->
+- [AUTH-01] `SESSION_KEY = 'kanban.session'` is the sole session storage key; it is intentionally distinct from `'kanban-demo:board'` (owned by persistence-seed). Future auth changes must update only this key — never introduce a second session key.
+<!-- added: 2026-06-28 | feature: demo-auth | confidence: high | verified: 2026-06-28 -->
+- [AUTH-02] When the `Session` shape changes, bump `SESSION_VERSION` in `src/auth/constants.ts`; the `isSession()` validator returns `null` on version mismatch and treats it as logged-out. No migration code is needed (demo scope) — the old session is discarded on next load.
+<!-- added: 2026-06-28 | feature: demo-auth | confidence: high | verified: 2026-06-28 -->
+- [AUTH-03] `useAuth()` is the sole access point for auth state; never import `AuthContext` directly from component files. `useAuth()` throws a descriptive error when called outside `<AuthProvider>`, surfacing missing-provider bugs immediately rather than producing a silent null reference.
+<!-- added: 2026-06-28 | feature: demo-auth | confidence: high | verified: 2026-06-28 -->
+- [AUTH-04] Auth gating is a conditional render (`RequireAuth` on `isAuthenticated`), never a router. The app has exactly two states — login and board. Do not add a router dependency for this two-state flow.
+<!-- added: 2026-06-28 | feature: demo-auth | confidence: high | verified: 2026-06-28 -->
 
 ## Patterns
 - Route gating — unauthenticated users see the login screen; authenticated users see the board.
+- Lazy `useState` initializer for synchronous session hydration: `useState<DemoUser | null>(() => readSession()?.user ?? null)`. A lazy initializer reads the session synchronously at mount — there is no flash of the login screen on reload. Do not replace this with a `useEffect` approach.
+- App composition order (integration contract): `AuthProvider → RequireAuth → BoardProvider → (PersistenceSyncer + Board)`. The board and drag-and-drop subtree mounts only when the user is authenticated; any component inside `BoardProvider` can safely assume auth context is always present.
 
 ## Key Files
-- `src/auth/`
+- `src/auth/types.ts` — DemoUser, Session types
+- `src/auth/constants.ts` — SESSION_KEY, SESSION_VERSION, DEMO_USER, DEMO_CREDENTIALS
+- `src/auth/session.ts` — readSession / writeSession / clearSession (only gateway to kanban.session)
+- `src/auth/AuthContext.tsx` — AuthProvider, AuthContextValue
+- `src/auth/useAuth.ts` — sole hook access point
+- `src/auth/RequireAuth.tsx` — conditional render gate
+- `src/auth/index.ts` — public barrel; always import from here
 
 ## Gotchas
 - Reload must keep the user logged in and land them back on the board.

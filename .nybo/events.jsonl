@@ -8,3 +8,9 @@
 {"timestamp":"2026-06-29T00:45:45.412Z","type":"doctor_run","actor":"human","details":{"passing":31,"warnings":4,"failures":1,"total":36}}
 {"timestamp":"2026-06-29T02:24:45.007Z","type":"doctor_run","actor":"human","details":{"passing":32,"warnings":3,"failures":1,"total":36}}
 {"timestamp":"2026-06-29T02:24:46.241Z","type":"doctor_run","actor":"human","details":{"passing":32,"warnings":3,"failures":1,"total":36}}
+{"timestamp":"2026-06-29T02:33:07.279Z","type":"spec_execution_started","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","task_count":4}}
+{"timestamp":"2026-06-29T02:33:07.388Z","type":"task_completed","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","task_number":1,"task_title":"Session store, types, and demo constants"}}
+{"timestamp":"2026-06-29T02:33:07.499Z","type":"task_completed","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","task_number":2,"task_title":"Auth context and useAuth hook"}}
+{"timestamp":"2026-06-29T02:33:07.608Z","type":"task_completed","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","task_number":3,"task_title":"Login screen"}}
+{"timestamp":"2026-06-29T02:33:07.718Z","type":"task_completed","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","task_number":4,"task_title":"Route gate, UserMenu, and App wiring"}}
+{"timestamp":"2026-06-29T02:33:07.826Z","type":"run_completed","actor":"agent","spec":"demo-auth","details":{"feature":"demo-auth","tasks_done":4,"tasks_blocked":0,"test_count":159,"coverage_pct":null}}
