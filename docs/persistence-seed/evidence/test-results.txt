@@ -1,0 +1,24 @@
+Test run: 2026-06-28
+Command: npm run test
+
+ RUN  v2.1.9 /Users/carlosvilla/Documents/Projects/Nybble/Demos/kanban-project
+
+ ✓ src/board/operations.test.ts (32 tests) 6ms
+ ✓ src/seed/__tests__/seedData.test.ts (12 tests) 3ms
+ ✓ src/storage/__tests__/boardLifecycle.test.ts (14 tests) 4ms
+ ✓ src/storage/__tests__/boardStorage.test.ts (23 tests) 5ms
+ ✓ src/storage/__tests__/useAutoPersist.test.tsx (4 tests) 10ms
+ ✓ src/components/Board.test.tsx (9 tests) 30ms
+ ✓ src/board/BoardContext.test.tsx (7 tests) 67ms
+ ✓ src/components/TaskCard.test.tsx (20 tests) 444ms
+
+ Test Files  8 passed (8)
+      Tests  121 passed (121)
+   Start at  19:55:12
+   Duration  1.12s
+
+New tests added by persistence-seed: 53
+  boardStorage.test.ts:   23
+  seedData.test.ts:       12
+  boardLifecycle.test.ts: 14
+  useAutoPersist.test.tsx:  4

@@ -8,6 +8,7 @@
 - [BOARD-03] All board state mutations are pure functions in `src/board/operations.ts`; `boardReducer` in `BoardContext.tsx` delegates to them and contains no logic directly. Selectors live here too.
 - [BOARD-04] `assertBoardInvariants(state)` (exported from `src/board/operations.ts`) is the dev-only guard for BR-011; call it in unit tests after every mutation to confirm the "exactly one column" invariant holds. It must not be called on hot paths in production builds.
 - [BOARD-05] Destructive actions (delete) use `<ConfirmDialog>` — never `window.confirm` — for visual polish. `ConfirmDialog` supports Escape-to-cancel and auto-focuses the confirm button.
+- [BOARD-06] `REPLACE_BOARD` (`{ type: 'REPLACE_BOARD'; state: BoardState }`) is now part of the `BoardAction` union, exposed as `replaceBoard(state)` on `useBoard()`. Used by persistence-seed's reset and init flows. Drag-and-drop must not remove this action; any future full-state replacement (e.g., import, sync) goes through this single action.
 
 ## Key Files
 

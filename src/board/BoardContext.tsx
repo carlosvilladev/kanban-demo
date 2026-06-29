@@ -39,7 +39,8 @@ import {
 type BoardAction =
   | { type: 'CREATE_TASK'; columnId: ColumnId; input: { title: string; description?: string } }
   | { type: 'UPDATE_TASK'; taskId: string; patch: { title?: string; description?: string } }
-  | { type: 'DELETE_TASK'; taskId: string };
+  | { type: 'DELETE_TASK'; taskId: string }
+  | { type: 'REPLACE_BOARD'; state: BoardState };
 
 // ─── Reducer ────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,8 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
       return opUpdateTask(state, action.taskId, action.patch);
     case 'DELETE_TASK':
       return opDeleteTask(state, action.taskId);
+    case 'REPLACE_BOARD':
+      return action.state;
     default:
       return state;
   }
@@ -63,6 +66,8 @@ interface BoardContextValue {
   createTask: (columnId: ColumnId, input: { title: string; description?: string }) => void;
   editTask: (taskId: string, patch: { title?: string; description?: string }) => void;
   deleteTask: (taskId: string) => void;
+  /** Replace the entire board state atomically (used by Reset demo). */
+  replaceBoard: (state: BoardState) => void;
   selectColumnTaskCount: (columnId: ColumnId) => number;
   selectTasksForColumn: (columnId: ColumnId) => Task[];
   getTaskColumn: (taskId: string) => ColumnId | undefined;
@@ -89,6 +94,7 @@ export function BoardProvider({ initialState, children }: BoardProviderProps) {
     createTask: (columnId, input) => dispatch({ type: 'CREATE_TASK', columnId, input }),
     editTask: (taskId, patch) => dispatch({ type: 'UPDATE_TASK', taskId, patch }),
     deleteTask: (taskId) => dispatch({ type: 'DELETE_TASK', taskId }),
+    replaceBoard: (newState) => dispatch({ type: 'REPLACE_BOARD', state: newState }),
     selectColumnTaskCount: (columnId) => opSelectColumnTaskCount(state, columnId),
     selectTasksForColumn: (columnId) => opSelectTasksForColumn(state, columnId),
     getTaskColumn: (taskId) => opGetTaskColumn(state, taskId),

@@ -161,4 +161,43 @@ describe('BoardProvider', () => {
     });
     expect(screen.getByTestId('count')).toHaveTextContent('1');
   });
+
+  it('replaceBoard (REPLACE_BOARD) swaps the entire board wholesale — reset demo path, no merge/duplicate', async () => {
+    const user = userEvent.setup();
+    // Start with one task in "todo".
+    const original = createTask(createEmptyBoard(), 'todo', { title: 'Original task' });
+    // A completely different board: one task in "done".
+    const replacement = createTask(createEmptyBoard(), 'done', { title: 'Replacement task' });
+
+    function Harness() {
+      const { state, replaceBoard, selectColumnTaskCount } = useBoard();
+      return (
+        <>
+          <span data-testid="todo">{selectColumnTaskCount('todo')}</span>
+          <span data-testid="done">{selectColumnTaskCount('done')}</span>
+          <span data-testid="total">{Object.keys(state.tasks).length}</span>
+          <button onClick={() => replaceBoard(replacement)}>Replace</button>
+        </>
+      );
+    }
+
+    render(
+      <BoardProvider initialState={original}>
+        <Harness />
+      </BoardProvider>,
+    );
+
+    expect(screen.getByTestId('todo')).toHaveTextContent('1');
+    expect(screen.getByTestId('done')).toHaveTextContent('0');
+    expect(screen.getByTestId('total')).toHaveTextContent('1');
+
+    await user.click(screen.getByRole('button', { name: 'Replace' }));
+
+    // Wholesale replace: the original task is gone (NOT merged), the replacement
+    // is present, and the total is still exactly 1 — proving no task was
+    // duplicated or lost across the reset.
+    expect(screen.getByTestId('todo')).toHaveTextContent('0');
+    expect(screen.getByTestId('done')).toHaveTextContent('1');
+    expect(screen.getByTestId('total')).toHaveTextContent('1');
+  });
 });

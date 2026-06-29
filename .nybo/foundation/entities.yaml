@@ -13,15 +13,15 @@ entities:
       - id
       - title
       - taskIds
-      - order
+    # order intentionally absent — column ordering lives in BoardState.columnOrder array.
   - name: Task
     description: A card representing a unit of work; belongs to exactly one column.
     attributes:
       - id
       - title
       - description
-      - columnId
-      - order
+    # columnId and order intentionally absent — column membership and position
+    # derive from column.taskIds, not from Task fields (BR-011, normalized state).
   - name: DemoUser
     description: The simulated authenticated user for the demo session.
     attributes:
