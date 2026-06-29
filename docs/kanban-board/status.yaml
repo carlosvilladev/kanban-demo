@@ -1,10 +1,11 @@
 feature: kanban-board
-status: draft
+status: in-review
 profile: code
 action_type: ADD
 compact: true
 persona: balanced
 created_at: '2026-06-28'
+in_review_at: '2026-06-29'
 dependencies:
   blocking: []
   blocks:
@@ -14,9 +15,6 @@ notes: >-
   Core/foundation feature. Defines the shared Task/Column/BoardState type model
   and the single-source-of-truth board store (BoardProvider/useBoard) consumed
   by persistence-seed (supplies initialState + auto-save) and drag-and-drop
-  (adds an atomic MOVE_TASK action). Scope: FR-B1/B2/B3 + FR-T1..T5, NFR-3/NFR-5.
-  Out of scope (sibling features): column CRUD (none in v1), drag-and-drop,
-  localStorage persistence/seed/reset, and auth gating (demo-auth). Planned
-  autonomously/non-interactively per orchestrator directive; open choices are
-  recorded under "Assumptions" in spec/spec.md. Left as draft (trust=supervised)
-  pending human review/approval before /nybo-run.
+  (adds an atomic MOVE_TASK action). All 4 tasks implemented. 121 tests pass
+  (52 original persistence-seed tests + 69 new kanban-board tests). Build, lint,
+  and tsc all clean. App.tsx wired to loadInitialBoard() + useAutoPersist.

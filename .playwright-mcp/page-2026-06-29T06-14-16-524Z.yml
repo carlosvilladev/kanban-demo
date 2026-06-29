@@ -1,0 +1,75 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "To Do" [level=2] [ref=e6]
+      - generic [ref=e7]: "3"
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - paragraph [ref=e11]: Design login screen
+          - paragraph [ref=e12]: Sketch the demo sign-in with a one-click "Continue as Demo User".
+        - generic [ref=e13]:
+          - button "Edit task" [ref=e14] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e15] [cursor=pointer]: Delete
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - paragraph [ref=e18]: Add a dark-mode toggle
+          - paragraph [ref=e19]: "Optional polish: respect `prefers-color-scheme` plus a manual switch."
+        - generic [ref=e20]:
+          - button "Edit task" [ref=e21] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e22] [cursor=pointer]: Delete
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - paragraph [ref=e25]: Write the demo script
+          - paragraph [ref=e26]: Draft the 60-second walkthrough narration for the live demo.
+        - generic [ref=e27]:
+          - button "Edit task" [ref=e28] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e29] [cursor=pointer]: Delete
+    - button "+ Add task" [ref=e31] [cursor=pointer]
+  - generic [ref=e32]:
+    - generic [ref=e33]:
+      - heading "In Progress" [level=2] [ref=e34]
+      - generic [ref=e35]: "2"
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Wire up drag & drop
+          - paragraph [ref=e40]: Integrate dnd-kit sensors, the ghost preview, and the insertion placeholder.
+        - generic [ref=e41]:
+          - button "Edit task" [ref=e42] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e43] [cursor=pointer]: Delete
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - paragraph [ref=e46]: Build the task card
+          - paragraph [ref=e47]: Title + description layout with edit and delete affordances.
+        - generic [ref=e48]:
+          - button "Edit task" [ref=e49] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e50] [cursor=pointer]: Delete
+    - button "+ Add task" [ref=e52] [cursor=pointer]
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - heading "Done" [level=2] [ref=e55]
+      - generic [ref=e56]: "3"
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - paragraph [ref=e60]: Scaffold React + Vite + TS
+          - paragraph [ref=e61]: Project bootstrapped with Vitest and ESLint.
+        - generic [ref=e62]:
+          - button "Edit task" [ref=e63] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e64] [cursor=pointer]: Delete
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - paragraph [ref=e67]: Set up localStorage persistence
+          - paragraph [ref=e68]: Single storage module with a versioned envelope and seed fallback.
+        - generic [ref=e69]:
+          - button "Edit task" [ref=e70] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e71] [cursor=pointer]: Delete
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - paragraph [ref=e74]: Define normalized board state
+          - paragraph [ref=e75]: Tasks keyed by id; columns hold ordered taskIds.
+        - generic [ref=e76]:
+          - button "Edit task" [ref=e77] [cursor=pointer]: Edit
+          - button "Delete task" [ref=e78] [cursor=pointer]: Delete
+    - button "+ Add task" [ref=e80] [cursor=pointer]
