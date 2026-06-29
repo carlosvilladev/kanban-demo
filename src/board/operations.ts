@@ -144,6 +144,86 @@ export function getTaskColumn(state: BoardState, taskId: string): ColumnId | und
 }
 
 /**
+ * Atomically moves a task to a new column and position.
+ *
+ * Algorithm (single implementation — shared by applyMove and the MOVE_TASK reducer):
+ * 1. Remove taskId from its source column.
+ * 2. Clamp toIndex into [0, targetTaskIds.length].
+ * 3. Splice-insert taskId at toIndex in the target column.
+ * 4. Return a NEW board object (immutable — no in-place mutation).
+ *
+ * No-op fast path: same column AND resulting index equals current index → return input unchanged.
+ * Returns input state unchanged if taskId is unknown.
+ */
+export function moveTask(
+  state: BoardState,
+  move: { taskId: string; toColumnId: ColumnId; toIndex: number },
+): BoardState {
+  const { taskId, toColumnId, toIndex } = move;
+
+  if (!state.tasks[taskId]) return state;
+
+  const sourceColumnId = getTaskColumn(state, taskId);
+  if (!sourceColumnId) return state;
+
+  // Remove from source column
+  const sourceTaskIds = state.columns[sourceColumnId].taskIds.filter(
+    (id) => id !== taskId,
+  );
+
+  // Target ids after removal (shares array when moving within same column)
+  const targetTaskIds =
+    sourceColumnId === toColumnId
+      ? sourceTaskIds
+      : [...state.columns[toColumnId].taskIds];
+
+  const clampedIndex = Math.max(0, Math.min(toIndex, targetTaskIds.length));
+
+  // No-op fast path
+  if (
+    sourceColumnId === toColumnId &&
+    clampedIndex === state.columns[sourceColumnId].taskIds.indexOf(taskId)
+  ) {
+    return state;
+  }
+
+  // Insert at clamped position
+  const newTargetTaskIds = [
+    ...targetTaskIds.slice(0, clampedIndex),
+    taskId,
+    ...targetTaskIds.slice(clampedIndex),
+  ];
+
+  if (sourceColumnId === toColumnId) {
+    return {
+      ...state,
+      columns: {
+        ...state.columns,
+        [sourceColumnId]: {
+          ...state.columns[sourceColumnId],
+          taskIds: newTargetTaskIds,
+        },
+      },
+    };
+  }
+
+  return {
+    ...state,
+    columns: {
+      ...state.columns,
+      [sourceColumnId]: {
+        ...state.columns[sourceColumnId],
+        taskIds: sourceTaskIds,
+      },
+      [toColumnId]: {
+        ...state.columns[toColumnId],
+        taskIds: newTargetTaskIds,
+      },
+    },
+  };
+}
+
+/**
  * Dev-only invariant check.
  * Throws if any task id appears in zero or more than one column's taskIds,
  * or if a taskId in a column doesn't exist in the tasks map.

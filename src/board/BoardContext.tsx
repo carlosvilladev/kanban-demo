@@ -23,6 +23,7 @@ import {
   createTask as opCreateTask,
   updateTask as opUpdateTask,
   deleteTask as opDeleteTask,
+  moveTask as opMoveTask,
   selectColumnTaskCount as opSelectColumnTaskCount,
   selectTasksForColumn as opSelectTasksForColumn,
   getTaskColumn as opGetTaskColumn,
@@ -33,14 +34,15 @@ import {
 /**
  * Union of all dispatch-able actions.
  *
- * drag-and-drop spec will add:
- *   | { type: 'MOVE_TASK'; taskId: string; toColumnId: ColumnId; toIndex: number }
+ * MOVE_TASK: added by drag-and-drop spec.
+ * Delegates to operations.moveTask (single algorithm — no divergent implementation).
  */
 type BoardAction =
   | { type: 'CREATE_TASK'; columnId: ColumnId; input: { title: string; description?: string } }
   | { type: 'UPDATE_TASK'; taskId: string; patch: { title?: string; description?: string } }
   | { type: 'DELETE_TASK'; taskId: string }
-  | { type: 'REPLACE_BOARD'; state: BoardState };
+  | { type: 'REPLACE_BOARD'; state: BoardState }
+  | { type: 'MOVE_TASK'; taskId: string; toColumnId: ColumnId; toIndex: number };
 
 // ─── Reducer ────────────────────────────────────────────────────────────────
 
@@ -54,6 +56,12 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
       return opDeleteTask(state, action.taskId);
     case 'REPLACE_BOARD':
       return action.state;
+    case 'MOVE_TASK':
+      return opMoveTask(state, {
+        taskId: action.taskId,
+        toColumnId: action.toColumnId,
+        toIndex: action.toIndex,
+      });
     default:
       return state;
   }
@@ -68,6 +76,8 @@ interface BoardContextValue {
   deleteTask: (taskId: string) => void;
   /** Replace the entire board state atomically (used by Reset demo). */
   replaceBoard: (state: BoardState) => void;
+  /** Move a task to a new column and position. Single atomic dispatch. */
+  moveTask: (taskId: string, toColumnId: ColumnId, toIndex: number) => void;
   selectColumnTaskCount: (columnId: ColumnId) => number;
   selectTasksForColumn: (columnId: ColumnId) => Task[];
   getTaskColumn: (taskId: string) => ColumnId | undefined;
@@ -95,6 +105,8 @@ export function BoardProvider({ initialState, children }: BoardProviderProps) {
     editTask: (taskId, patch) => dispatch({ type: 'UPDATE_TASK', taskId, patch }),
     deleteTask: (taskId) => dispatch({ type: 'DELETE_TASK', taskId }),
     replaceBoard: (newState) => dispatch({ type: 'REPLACE_BOARD', state: newState }),
+    moveTask: (taskId, toColumnId, toIndex) =>
+      dispatch({ type: 'MOVE_TASK', taskId, toColumnId, toIndex }),
     selectColumnTaskCount: (columnId) => opSelectColumnTaskCount(state, columnId),
     selectTasksForColumn: (columnId) => opSelectTasksForColumn(state, columnId),
     getTaskColumn: (taskId) => opGetTaskColumn(state, taskId),

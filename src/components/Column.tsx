@@ -1,16 +1,22 @@
 /**
  * Column header (title + live count) and task list region.
  *
- * T3: renders header and task stubs.
- * T4 extends this file to render full <TaskCard> and wire the Add-task form.
+ * Drag-and-drop additions (T3):
+ * - useDroppable: makes the column a valid drop target (empty columns accept drops).
+ * - SortableContext: animates sibling cards with verticalListSortingStrategy,
+ *   opening the insertion placeholder gap as the user drags over the column.
+ * - SortableTaskCard: wraps each TaskCard with useSortable handles.
+ *   TaskCard itself is unchanged (no dnd-kit dependency) so its tests remain green.
  *
  * Reads state from useBoard() — never from localStorage directly.
  */
 import { useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBoard } from '../board/BoardContext';
 import type { ColumnId } from '../types/board';
-import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
+import { SortableTaskCard } from '../dnd/SortableTaskCard';
 
 interface ColumnProps {
   columnId: ColumnId;
@@ -23,6 +29,10 @@ export function Column({ columnId }: ColumnProps) {
   const column = state.columns[columnId];
   const tasks = selectTasksForColumn(columnId);
   const count = selectColumnTaskCount(columnId);
+  const taskIds = column.taskIds;
+
+  // Register this column as a droppable so empty columns accept cards.
+  const { setNodeRef } = useDroppable({ id: columnId });
 
   return (
     <div className="column" data-testid={`column-${columnId}`}>
@@ -38,22 +48,24 @@ export function Column({ columnId }: ColumnProps) {
         </span>
       </div>
 
-      {/* Task list */}
-      <div className="column-tasks">
-        {tasks.length === 0 && !showAddForm && (
-          <div className="column-empty">No tasks yet</div>
-        )}
-        {tasks.map((task) => (
-          <TaskCard key={task.id} taskId={task.id} />
-        ))}
-        {showAddForm && (
-          <TaskForm
-            mode="create"
-            columnId={columnId}
-            onClose={() => setShowAddForm(false)}
-          />
-        )}
-      </div>
+      {/* Task list — SortableContext drives the insertion placeholder gap */}
+      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+        <div className="column-tasks" ref={setNodeRef}>
+          {tasks.length === 0 && !showAddForm && (
+            <div className="column-empty">No tasks yet</div>
+          )}
+          {tasks.map((task) => (
+            <SortableTaskCard key={task.id} taskId={task.id} />
+          ))}
+          {showAddForm && (
+            <TaskForm
+              mode="create"
+              columnId={columnId}
+              onClose={() => setShowAddForm(false)}
+            />
+          )}
+        </div>
+      </SortableContext>
 
       {/* Add-task affordance */}
       {!showAddForm && (

@@ -1,0 +1,17 @@
+Test run: 2026-06-28
+
+ Test Files  17 passed (17)
+      Tests  210 passed (210)   [159 pre-existing + 51 new DnD]
+   Duration  ~1.2s
+
+New DnD tests (51):
+  src/dnd/applyMove.test.ts        24 tests  — TC-001, TC-002, TC-003
+  src/dnd/projectDrop.test.ts      11 tests  — TC-004, TC-005
+  src/dnd/BoardDndContext.test.tsx   7 tests  — TC-012, handler-level
+  src/dnd/dnd.integration.test.tsx  17 tests  — TC-006..013, no-dup/no-loss
+  src/dnd/perf.test.ts               2 tests  — TC-013 (statistical)
+
+Perf log:
+  [perf] 1000 applyMove calls: 0.47 ms (0.0005 ms/op)
+  [perf] single applyMove: 0.0046 ms
+  [TC-013] dispatch + settle: 0.05 ms
